@@ -2,9 +2,6 @@
 import { useEffect, useState } from 'react';
 import { isMobile } from 'react-device-detect';
 
-/**
- * Partially AI Generated
- */
 const ProgressLoader = ({ progress }: { progress: number }) => {
   const strokeWidth = 3;
   const [windowSize, setWindowSize] = useState({

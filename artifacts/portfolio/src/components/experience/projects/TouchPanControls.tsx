@@ -1,11 +1,6 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState } from "react";
 
-/**
- * Claude generated this. Very good code ngl.
- *
- * @returns
- */
 export const TouchPanControls = () => {
   const { camera } = useThree()
   const touchStartRef = useRef({ x: 0, y: 0 })

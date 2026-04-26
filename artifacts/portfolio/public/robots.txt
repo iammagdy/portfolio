@@ -1,5 +1,4 @@
 User-agent: *
-Disallow: /_next/static/chunks/app/
 Allow: /
 
 Sitemap: https://magdysaber.com/sitemap.xml
