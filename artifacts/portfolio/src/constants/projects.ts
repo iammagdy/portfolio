@@ -1,59 +1,73 @@
 import { Project } from "../types";
 
-// TODO: Move this to API
+// Sorted oldest -> newest (left -> right in the carousel).
 export const PROJECTS: Project[] = [
   {
-    title: 'Angular Gulp Seed',
-    date: 'Aug 2016',
-    subtext: 'A basic starter project to initialize project using AngularJS and Gulp. It follows MVC architecture and uses standard app structure.',
-    url: 'https://github.com/magdysaber/angular-gulp-seed',
+    title: 'megZone',
+    date: '2024-2025',
+    subtext: 'megZone is a centralized AI workspace that lets you launch and manage multiple AI apps (starting with the AI CV Builder) from one streamlined interface. Unpublished — development paused.',
+    urls: [
+      { text: 'VIEW ↗', disabled: true },
+    ],
   },
   {
-    title: 'State.js',
-    date: 'Jul 2020',
-    subtext: 'A lightweight library for turning JS objects into observables, providing a convenient API for state management and manipulation.',
-    url: 'https://github.com/magdysaber/state.js',
+    title: 'Wise Prompt',
+    date: '2025',
+    subtext: 'An "All-in-One" AI workspace that combines advanced prompt engineering, web scraping, and computer vision into a single Streamlit interface, allowing users to generate full-stack code, analyze live websites, and replicate UI designs instantly.',
+    urls: [
+      { text: 'CODE ↗', url: 'https://github.com/iammagdy/Wise-Prompt' },
+    ],
   },
   {
-    title: 'change-host',
-    date: 'Jul 2020',
-    subtext: 'A CLI tool to manage /etc/hosts entries for local development. It enables quick and easy mapping of IPs to URLs with a single command.',
-    url: 'https://github.com/magdysaber/change-host',
+    title: 'Wise Quran',
+    date: '2025-2026',
+    subtext: 'A modern, offline-first Quran Progressive Web App (PWA) for reading, listening, and daily worship tracking.',
+    urls: [
+      { text: 'SITE ↗', url: 'https://quran.thewise.cloud' },
+      { text: 'CODE ↗', url: 'https://github.com/iammagdy/wisequran' },
+    ],
   },
   {
-    title: 'Vaccine Slots Discord Bot',
-    date: 'May 2021',
-    subtext: 'A Discord Bot that sends alerts for COVID-19 vaccine availability based on PIN/district using public APIs.',
-    url: 'https://github.com/magdysaber/vaccine-slots-discord-bot',
-  },
-  {
-    title: 'Chat bot',
-    date: 'Aug 2024',
-    subtext: 'A streaming chatbot that allows users to switch between different LLMs with custom API keys.',
-    url: 'https://github.com/magdysaber/chat-bot-vercel',
-  },
-  {
-    title: 'Word Game',
-    date: 'Oct 2024',
-    subtext: 'This word game app offers single and multiplayer modes where players take turns forming words, each starting with the last letter of the previous word.',
-    url: 'https://github.com/magdysaber/word-game',
-  },
-  {
-    title: 'DJ Gig',
-    date: 'Mar 2025',
-    subtext: 'Hosted a Sundowner event which was recorded and is out on YouTube. Furthermore, I performed a UKG/140 DJ set at a local club.',
-    url: 'https://www.youtube.com/watch?v=oauQSEySkoQ',
+    title: 'Wise Resume',
+    date: '2025-2026',
+    subtext: 'AI career platform for job seekers that combines a powerful resume builder (30+ templates, ATS scoring, multi-format export) with interview coaching, AI career tools, a public portfolio builder, and an application tracker, all running on a shared AI and Supabase backend.',
+    urls: [
+      { text: 'SITE ↗', url: 'https://resume.thewise.cloud' },
+      { text: 'CODE ↗', disabled: true },
+    ],
   },
   {
     title: 'Portfolio',
-    date: 'Apr 2025',
+    date: '2026',
     subtext: '[Enter a meta joke].',
-    url: 'https://github.com/magdysaber/magdysaber.com',
+    urls: [
+      { text: 'CODE ↗', url: 'https://github.com/iammagdy/MagdySaber_Portfolio' },
+    ],
   },
   {
-    title: 'Focus Clock',
-    date: 'Jun 2025',
-    subtext: 'Developed a minimalist clock featuring a time-remaining indicator.',
-    url: 'https://github.com/magdysaber/focus-clock',
+    title: 'Wise Hire',
+    date: '2026',
+    subtext: 'An invite-only AI HR SaaS for recruiters and HR teams that offers AI-written job descriptions, candidate briefs, bulk CV screening, a Kanban hiring pipeline, HR analytics, and enterprise-ready features like SSO, all built on the same Wise Cloud platform.',
+    urls: [
+      { text: 'SITE ↗', url: 'https://resume.thewise.cloud/enterprises' },
+      { text: 'CODE ↗', disabled: true },
+    ],
+  },
+  {
+    title: 'The Wise Cloud',
+    date: '2026',
+    subtext: 'A dual-product AI platform that serves both sides of the hiring market from one place, giving job seekers and HR teams all their tools in a single, connected ecosystem. Currently under development.',
+    urls: [
+      { text: 'SITE ↗', url: 'https://thewise.cloud' },
+      { text: 'CODE ↗', disabled: true },
+    ],
+  },
+  {
+    title: 'Magic Sourcing',
+    date: '2026',
+    subtext: 'A Chrome extension that automates LinkedIn candidate sourcing using Google Gemini AI (and optionally OpenRouter or Groq). It evaluates profiles against a job description, scores matches, and presents a full-featured results dashboard with skill-gap analysis, outreach generation, and session history.',
+    urls: [
+      { text: 'VIEW ↗', disabled: true },
+    ],
   },
 ];

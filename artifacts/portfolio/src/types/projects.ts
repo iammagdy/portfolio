@@ -1,6 +1,7 @@
-interface ProjectUrl {
+export interface ProjectUrl {
   text: string;
-  url: string;
+  url?: string;
+  disabled?: boolean;
 }
 
 export interface Project {

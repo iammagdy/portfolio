@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 import { usePortalStore } from "@stores";
-import { Project } from "@types";
+import { Project, ProjectUrl } from "@types";
 
 interface ProjectTileProps {
   project: Project;
@@ -20,9 +20,21 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
   const { size } = useThree();
   const isMobile = size.width < 768;
   const projectRef = useRef<THREE.Group>(null);
+  const buttonsGroupRef = useRef<THREE.Group>(null);
   const hoverAnimRef = useRef<gsap.core.Timeline | null>(null);
   const [hovered, setHovered] = useState(false);
   const isProjectSectionActive = usePortalStore((state) => state.activePortalId === "projects");
+
+  const buttons: ProjectUrl[] = useMemo(() => {
+    if (project.urls && project.urls.length > 0) return project.urls;
+    if (project.url) return [{ text: 'VIEW ↗', url: project.url }];
+    return [];
+  }, [project.urls, project.url]);
+
+  const buttonXPositions: number[] = useMemo(() => {
+    if (buttons.length <= 1) return [1.3];
+    return [0.05, 1.3];
+  }, [buttons.length]);
 
   const titleProps = useMemo(() => ({
     font: "./soria-font.ttf",
@@ -40,7 +52,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     if (!projectRef.current) return;
     hoverAnimRef.current?.kill();
 
-    const [mesh, title, dateGroup, textBox, button] = projectRef.current.children;
+    const [mesh, title, dateGroup, textBox] = projectRef.current.children;
 
     hoverAnimRef.current = gsap.timeline();
     hoverAnimRef.current
@@ -53,19 +65,24 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
       }, 0)
       .to(title.position, { y: hovered ? 0.7 : -0.8 }, 0)
       .to(textBox.position, { y: hovered ? 0.7 : 0 }, 0)
-      // .to(textBox.scale, { y: hovered ? 1 : 0, x: hovered ? 1 : 0 }, 0)
       .to(textBox, { fillOpacity: hovered ? 1 : 0, duration: 0.4 }, 0)
       .to(dateGroup.position, { y: hovered ? 2.6 : 1.4 }, 0)
       .to(mesh.scale, { y: hovered ? 2 : 1 }, 0)
       .to((mesh as THREE.Mesh).material, { opacity: hovered ? 0.95 : 0.3 }, 0)
       .to(mesh.position, { y: hovered ? 1 : 0 }, 0);
 
-    if (project.url) {
-      hoverAnimRef.current
-        .to(button.scale, { y: hovered ? 1 : 0, x: hovered ? 1 : 0 }, 0)
-        .to(button.position, { z: hovered ? 0.3 : -1 }, 0);
+    if (buttonsGroupRef.current) {
+      buttonsGroupRef.current.children.forEach((btn, i) => {
+        const isDisabled = !!buttons[i]?.disabled || !buttons[i]?.url;
+        hoverAnimRef.current!
+          .to(btn.scale, { x: hovered ? 1 : 0, y: hovered ? 1 : 0 }, 0);
+        if (!isDisabled) {
+          hoverAnimRef.current!
+            .to(btn.position, { z: hovered ? 0.3 : -1 }, 0);
+        }
+      });
     }
-  }, [hovered]);
+  }, [hovered, buttons]);
 
   useEffect(() => {
     if (isMobile) {
@@ -83,13 +100,13 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     }
   }, [isProjectSectionActive]);
 
-  const handleClick = (e: ThreeEvent<MouseEvent>) => {
+  const handleButtonClick = (button: ProjectUrl) => (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (!project.url) return;
-    const button = e.eventObject;
-    gsap.to(button.position, { z: 0, duration: 0.1 })
-      .then(() => gsap.to(button.position, { z: 0.3, duration: 0.3 }));
-    setTimeout(() => window.open(project.url, '_blank'), 50);
+    if (!button.url || button.disabled) return;
+    const btn = e.eventObject;
+    gsap.to(btn.position, { z: 0, duration: 0.1 })
+      .then(() => gsap.to(btn.position, { z: 0.3, duration: 0.3 }));
+    setTimeout(() => window.open(button.url, '_blank'), 50);
   };
 
   return (
@@ -103,7 +120,6 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
         <mesh>
           <planeGeometry args={[4.2, 2, 1]} />
           <meshBasicMaterial color="#FFF" transparent opacity={0.3}/>
-          {/* <meshPhysicalMaterial transmission={1} roughness={0.3} /> */}
           <Edges color="black" lineWidth={1.5} />
         </mesh>
         <Text
@@ -132,31 +148,42 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           {...subtitleProps}
           maxWidth={3.8}
           position={[-1.9, 2.3, 0.1]}
-          // scale={[0, 0, 1]}
           fontSize={0.2}>
           {project.subtext}
         </Text>
-        {project.url && (
-          <group
-            position={[1.3, -0.6, -1]}
-            scale={[0, 0, 1]}
-            onClick={handleClick}
-            onPointerOver={() => document.body.style.cursor = 'pointer'}
-            onPointerOut={() => document.body.style.cursor = 'auto'}>
-            <mesh>
-              <boxGeometry args={[1.1, 0.4, 0.2]} />
-              <meshBasicMaterial color="#222" />
-              <Edges color="white" lineWidth={1} />
-            </mesh>
-            <Text
-              {...subtitleProps}
-              color="white"
-              position={[-0.4, 0.15, 0.2]}
-              fontSize={0.25}>
-              VIEW ↗
-            </Text>
-          </group>
-        )}
+        <group ref={buttonsGroupRef}>
+          {buttons.map((button, i) => {
+            const isDisabled = !!button.disabled || !button.url;
+            const x = buttonXPositions[i] ?? 1.3;
+            return (
+              <group
+                key={`${i}-${button.text}`}
+                position={[x, -0.6, isDisabled ? 0 : -1]}
+                scale={[0, 0, 1]}
+                onClick={isDisabled ? undefined : handleButtonClick(button)}
+                onPointerOver={isDisabled ? undefined : () => { document.body.style.cursor = 'pointer'; }}
+                onPointerOut={isDisabled ? undefined : () => { document.body.style.cursor = 'auto'; }}>
+                <mesh>
+                  <boxGeometry args={[1.1, 0.4, 0.2]} />
+                  <meshBasicMaterial
+                    color={isDisabled ? "#888" : "#222"}
+                    transparent
+                    opacity={isDisabled ? 0.55 : 1}
+                  />
+                  <Edges color={isDisabled ? "#bbb" : "white"} lineWidth={1} />
+                </mesh>
+                <Text
+                  {...subtitleProps}
+                  color="white"
+                  fillOpacity={isDisabled ? 0.65 : 1}
+                  position={[-0.4, 0.15, 0.2]}
+                  fontSize={0.25}>
+                  {button.text}
+                </Text>
+              </group>
+            );
+          })}
+        </group>
       </group>
     </group>
   );
