@@ -31,15 +31,9 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    ...(process.env.NODE_ENV !== "production" ? [runtimeErrorOverlay()] : []),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer({
-              root: path.resolve(import.meta.dirname, ".."),
-            }),
-          ),
           await import("@replit/vite-plugin-dev-banner").then((m) =>
             m.devBanner(),
           ),
@@ -54,7 +48,7 @@ export default defineConfig({
       "@constants": path.resolve(import.meta.dirname, "src/constants"),
       "@types": path.resolve(import.meta.dirname, "src/types"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "three"],
   },
   root: path.resolve(import.meta.dirname),
   build: {
