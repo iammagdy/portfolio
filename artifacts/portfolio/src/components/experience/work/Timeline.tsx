@@ -33,11 +33,11 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const titleProps = useMemo(() => ({
     ...textProps,
     font: "./soria-font.ttf",
-    fontSize: 0.34,
-    maxWidth: 3.0,
+    fontSize: isMobile ? 0.42 : 0.34,
+    maxWidth: isMobile ? 3.5 : 3.0,
     lineHeight: 1.15,
     overflowWrap: 'break-word' as const,
-  }), [textProps]);
+  }), [textProps, isMobile]);
 
   const hasDescription = !!point.description;
   const panelWidth = 3.6;
@@ -46,11 +46,11 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelX = isMobile ? 0 : (point.position === 'left'
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2);
-  const panelGroupY = isMobile ? 1.0 : 0;
+  const panelGroupY = isMobile ? 0.9 : 0;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
   return (
-    <group position={point.point} scale={isMobile ? 1.5 : 0.6}>
+    <group position={point.point} scale={isMobile ? 0.9 : 0.6}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
@@ -73,17 +73,17 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
             depthTest={false}
           />
         </mesh>
-        <Text {...textProps} fontSize={0.28} position={[0, -0.05, 0]}>
+        <Text {...textProps} fontSize={isMobile ? 0.34 : 0.28} position={[0, -0.05, 0]}>
           {point.year}
         </Text>
         <Text {...titleProps} position={[0, -1.05 - diff / 2, 0]}>
           {point.title}
         </Text>
-        <Text {...textProps} fontSize={0.2} maxWidth={3.0} position={[0, -1.95 - diff * 0.1, 0]}>
+        <Text {...textProps} fontSize={isMobile ? 0.26 : 0.2} maxWidth={3.5} position={[0, -1.95 - diff * 0.1, 0]}>
           {point.subtitle}
         </Text>
         {point.description && (
-          <Text {...textProps} fontSize={0.18} maxWidth={3.0} lineHeight={1.4} textAlign="center" position={[0, -2.55 - diff * 0.1, 0]}>
+          <Text {...textProps} fontSize={isMobile ? 0.22 : 0.18} maxWidth={3.5} lineHeight={1.4} textAlign="center" position={[0, -2.55 - diff * 0.1, 0]}>
             {point.description}
           </Text>
         )}
