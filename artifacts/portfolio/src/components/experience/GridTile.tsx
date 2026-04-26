@@ -35,13 +35,13 @@ const GridTile = (props: GridTileProps) => {
       const isWork = id === 'work';
       gsap.to(titleRef.current, {
         fontSize: 0.12,
-        maxWidth: 1.8,
+        maxWidth: 2.2,
         color: '#FFF',
-        letterSpacing: 0.08,
+        letterSpacing: 0.1,
       });
       gsap.to(titleRef.current.position, {
         x: 0,
-        y: -0.3,
+        y: isWork ? -0.95 : 0.95,
         duration: 0.5,
       });
     }
@@ -165,7 +165,7 @@ const GridTile = (props: GridTileProps) => {
     if (!isMobile) {
       return <planeGeometry args={[4, 4, 1]} />
     }
-    return <planeGeometry args={[2.5, 1.5, 1]} />;
+    return <planeGeometry args={[3.0, 1.5, 1]} />;
   };
 
   return (
