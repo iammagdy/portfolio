@@ -3,7 +3,13 @@ import { useProgress } from "@react-three/drei";
 import gsap from "gsap";
 import { usePortalStore, useThemeStore } from "@stores";
 import { useScrollStore } from "@stores/scrollStore";
-import ContactForm from "./ContactForm";
+
+const CONTACT_EMAIL = "contact@magdysaber.com";
+const MAILTO_HREF = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+  "Hello Magdy",
+)}&body=${encodeURIComponent(
+  "Hi Magdy,\n\nI came across your portfolio and wanted to reach out about ",
+)}`;
 
 const ContactButton = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -14,7 +20,6 @@ const ContactButton = () => {
 
   const [loaded, setLoaded] = useState(false);
   const [startAnimation, setStartAnimation] = useState(false);
-  const [open, setOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   useEffect(() => {
@@ -70,42 +75,36 @@ const ContactButton = () => {
   }, [isPortalActive, loaded]);
 
   return (
-    <>
-      <div
-        ref={wrapperRef}
-        aria-hidden={open ? "true" : "false"}
+    <div
+      ref={wrapperRef}
+      style={{
+        position: "fixed",
+        zIndex: 999,
+        top: "50%",
+        right: -200,
+        opacity: 0,
+        transform: "translateY(-50%)",
+        pointerEvents: "auto",
+      }}
+    >
+      <a
+        href={MAILTO_HREF}
+        aria-label={`Email Magdy at ${CONTACT_EMAIL}`}
+        className="group flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full shadow-lg backdrop-blur-md border border-white/30 bg-black/30 hover:bg-black/50 transition-all hover:scale-105 active:scale-95"
         style={{
-          position: "fixed",
-          zIndex: 999,
-          top: "50%",
-          right: -200,
-          opacity: 0,
-          transform: "translateY(-50%)",
-          pointerEvents: open ? "none" : "auto",
+          fontFamily: "Vercetti, Arial, sans-serif",
         }}
       >
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Open contact form"
-          className="group flex items-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-full shadow-lg backdrop-blur-md border border-white/30 bg-black/30 hover:bg-black/50 transition-all hover:scale-105 active:scale-95"
-          style={{
-            fontFamily: "Vercetti, Arial, sans-serif",
-          }}
-        >
-          <span
-            className="inline-block w-2 h-2 rounded-full"
-            style={{ backgroundColor: color }}
-            aria-hidden="true"
-          />
-          <span className="text-white text-xs sm:text-sm tracking-widest uppercase font-medium whitespace-nowrap">
-            Contact me
-          </span>
-        </button>
-      </div>
-
-      <ContactForm open={open} onClose={() => setOpen(false)} />
-    </>
+        <span
+          className="inline-block w-2 h-2 rounded-full"
+          style={{ backgroundColor: color }}
+          aria-hidden="true"
+        />
+        <span className="text-white text-xs sm:text-sm tracking-widest uppercase font-medium whitespace-nowrap">
+          Contact me
+        </span>
+      </a>
+    </div>
   );
 };
 

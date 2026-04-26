@@ -17,9 +17,8 @@ This is Magdy Saber's 3D portfolio — a creative frontend showcase using React 
 - **Animation**: GSAP + @gsap/react
 - **State management**: Zustand
 - **Fonts**: Soria (TTF) + Vercetti (WOFF) — local fonts in public/
-- **API framework**: Express 5 (artifacts/api-server, serves /api/contact)
+- **API framework**: Express 5 (artifacts/api-server, currently only serves /api/healthz)
 - **Database**: PostgreSQL + Drizzle ORM (not used by portfolio)
-- **Email**: Resend (transactional email for contact form)
 
 ## Artifacts
 
@@ -32,15 +31,13 @@ The Replit preview proxy routes by artifact `paths`:
 - `/api/*` → api-server (artifacts/api-server/.replit-artifact/artifact.toml `paths = ["/api"]`)
 - `/*` → portfolio (artifacts/portfolio/.replit-artifact/artifact.toml `paths = ["/"]`)
 
-This means the portfolio's frontend can call `fetch("/api/contact")` directly — no env-driven base URL or Vite proxy is needed in dev or prod. Both artifacts have their own workflows that run independently.
+This means the portfolio's frontend can call `fetch("/api/...")` directly — no env-driven base URL or Vite proxy is needed in dev or prod. Both artifacts have their own workflows that run independently.
 
-## Contact Form
+## Contact Button
 
-- Component: `artifacts/portfolio/src/components/common/ContactForm.tsx` (modal) + `ContactButton.tsx` (right-edge pill trigger)
-- Endpoint: `POST /api/contact` in `artifacts/api-server/src/routes/contact.ts`
-- Email provider: Resend (HTTP API). Required env: `RESEND_API_KEY`. Optional: `CONTACT_FROM_EMAIL` (defaults to `onboarding@resend.dev`).
-- Recipient: `contact@magdysaber.com`. Reply-to is set to the visitor's email.
-- Without `RESEND_API_KEY`, endpoint returns 503 with a friendly message asking the visitor to email directly.
+- Component: `artifacts/portfolio/src/components/common/ContactButton.tsx`
+- Right-edge pill labeled "Contact me" with the same GSAP slide-in / scroll-out animation as the previous Awwards badge.
+- Clicking opens a `mailto:contact@magdysaber.com` link (with a pre-filled subject and body) in the visitor's email app — no backend or third-party email service required.
 
 ## Key Commands
 
