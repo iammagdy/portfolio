@@ -41,8 +41,8 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
 
   const hasDescription = !!point.description;
   const panelWidth = 3.6;
-  const panelHeight = hasDescription ? 3.4 : 2.7;
-  const panelCenterY = hasDescription ? -1.35 : -1.0;
+  const panelHeight = hasDescription ? 3.9 : 2.7;
+  const panelCenterY = hasDescription ? -1.55 : -1.0;
   const panelX = point.position === 'left'
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2;
@@ -82,7 +82,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
           {point.subtitle}
         </Text>
         {point.description && (
-          <Text {...textProps} fontSize={0.18} maxWidth={3.0} lineHeight={1.3} textAlign="center" position={[0, -2.75 - diff * 0.1, 0]}>
+          <Text {...textProps} fontSize={0.18} maxWidth={3.0} lineHeight={1.4} textAlign="center" position={[0, -2.55 - diff * 0.1, 0]}>
             {point.description}
           </Text>
         )}
