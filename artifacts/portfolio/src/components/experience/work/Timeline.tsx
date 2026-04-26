@@ -8,6 +8,14 @@ import * as THREE from "three";
 import { WORK_TIMELINE } from "@constants";
 import { WorkTimelinePoint } from "@types";
 
+const onTextSync = (text: { material?: THREE.Material }) => {
+  if (text.material) {
+    text.material.depthTest = false;
+    text.material.depthWrite = false;
+    text.material.transparent = true;
+  }
+};
+
 const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
   const { size } = useThree();
   const isMobile = size.width < 768;
@@ -18,6 +26,8 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     anchorX: "center" as const,
     textAlign: "center" as const,
     fillOpacity: 2 - 2 * diff,
+    renderOrder: 12,
+    onSync: onTextSync,
   }), [diff]);
 
   const titleProps = useMemo(() => ({
@@ -38,18 +48,26 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
 
   return (
     <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
-      <Box args={[0.2, 0.2, 0.2]} position={[0, 0, -0.1]} scale={[1 - diff, 1 - diff, 1 - diff]}>
-        <meshBasicMaterial color="white" wireframe />
-        <Edges color="white" lineWidth={1.5} />
+      <Box
+        args={[0.2, 0.2, 0.2]}
+        position={[0, 0, -0.1]}
+        scale={[1 - diff, 1 - diff, 1 - diff]}
+        renderOrder={10}
+      >
+        <meshBasicMaterial color="white" wireframe depthTest={false} />
+        <Edges color="white" lineWidth={1.5} renderOrder={10}>
+          <lineBasicMaterial color="white" depthTest={false} />
+        </Edges>
       </Box>
       <group position={[panelX, 0, 0]}>
-        <mesh position={[0, panelCenterY, -0.15]}>
+        <mesh position={[0, panelCenterY, -0.15]} renderOrder={11}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
             color="#0a0a18"
             transparent
             opacity={panelOpacity}
             depthWrite={false}
+            depthTest={false}
           />
         </mesh>
         <Text {...textProps} fontSize={0.3} position={[0, 0.05, 0]}>
@@ -134,7 +152,13 @@ const Timeline = ({ progress }: { progress: number }) => {
 
   return (
     <group position={[0, -0.1, -0.1]}>
-      <Line points={visibleCurvePoints} color="white" lineWidth={3} />
+      <Line
+        points={visibleCurvePoints}
+        color="white"
+        lineWidth={3}
+        depthTest={false}
+        renderOrder={9}
+      />
       {visibleDashedCurvePoints.length > 0 && (
         <Line
           points={visibleDashedCurvePoints}
@@ -143,6 +167,8 @@ const Timeline = ({ progress }: { progress: number }) => {
           dashed
           dashSize={0.25}
           gapSize={0.25}
+          depthTest={false}
+          renderOrder={9}
         />
       )}
       <group ref={groupRef}>
