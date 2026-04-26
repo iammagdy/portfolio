@@ -36,9 +36,9 @@ const GridTile = (props: GridTileProps) => {
       const isWork = id === 'work';
       gsap.to(titleRef.current, {
         fontSize: 0.13,
-        maxWidth: 4,
+        maxWidth: 1.2,
         color: isWork ? '#FFF' : '#888',
-        letterSpacing: 0.4,
+        letterSpacing: 0.1,
       });
       gsap.to(titleRef.current.position, {
         x: isWork ? 0.8 : -0.8,

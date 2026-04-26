@@ -1,13 +1,12 @@
 import { Svg, Text, useCursor, useScroll } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
-import { isMobile } from "react-device-detect";
 import * as THREE from "three";
 import { FOOTER_LINKS } from "../../constants";
 import { FooterLink } from "../../types";
 
-const FooterLinkItem = ({ link }: { link: FooterLink }) => {
+const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolean }) => {
   const textRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const onPointerOver = () => setHovered(true);
@@ -56,7 +55,7 @@ const FooterLinkItem = ({ link }: { link: FooterLink }) => {
   }, [])
 
   useEffect(() => {
-    if (isMobile) return
+    if (isMobile) return;
 
     const hoverDiv = document.getElementById(`footer-link-${link.name}`);
 
@@ -93,6 +92,8 @@ const FooterLinkItem = ({ link }: { link: FooterLink }) => {
 const Footer = () => {
   const groupRef = useRef<THREE.Group>(null);
   const data = useScroll();
+  const { size } = useThree();
+  const isMobile = size.width < 768;
 
   useFrame(() => {
     const d = data.range(0.8, 0.2);
@@ -108,7 +109,7 @@ const Footer = () => {
     return FOOTER_LINKS.map((link, i) => {
       return (
         <group key={i} position={[i * spacing, 0, 0]}>
-          <FooterLinkItem link={link}/>
+          <FooterLinkItem link={link} isMobile={isMobile} />
         </group>
       );
     });
