@@ -1,18 +1,6 @@
 import { Cloud, Clouds } from "@react-three/drei";
 import * as THREE from "three";
 
-// Approximate world-space bounding spheres of the clouds defined below.
-// Consumed by the hero to detect when a cloud overlaps the title text so the
-// stroke can flip from white to black. Keep in sync with the <Cloud> props.
-export const CLOUD_BOUNDS = [
-  { center: new THREE.Vector3(-1, -5, 0), radius: 9.5 },
-  { center: new THREE.Vector3(2, -5, 2), radius: 5 },
-  { center: new THREE.Vector3(-10, -15, 4), radius: 20 },
-  { center: new THREE.Vector3(6, -8, 8), radius: 5 },
-  { center: new THREE.Vector3(0, -25, 20), radius: 10 },
-  { center: new THREE.Vector3(10, -20, -5), radius: 7.5 },
-];
-
 const CloudContainer = () => {
   return (
     <Clouds material={THREE.MeshBasicMaterial}
