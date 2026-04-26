@@ -13,10 +13,4 @@ export const FOOTER_LINKS: FooterLink[] = [
     icon: 'icons/github.svg',
     url: 'https://github.com/iammagdy',
   },
-  {
-    name: 'Resume',
-    hoverText: 'Download',
-    icon: 'icons/file.svg',
-    url: '',
-  }
 ];

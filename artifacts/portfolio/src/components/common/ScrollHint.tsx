@@ -49,11 +49,10 @@ export const ScrollHint = () => {
   const svgSrc = hintText === 'PAN' ? 'icons/chevrons-left-right.svg' : 'icons/chevrons-up-down.svg';
 
   return (
-    <div className="fixed w-full bottom-5 scroll-hint" style={{ opacity: 0 }}>
-      <div className="flex items-center justify-center animate-pulse">
-        { showScrollHint }
-        <img src={svgSrc} width={18} height={18} alt="night mode" loading="lazy" />
-        <span className="text-white">{hintText}</span>
+    <div className="fixed w-full bottom-5 scroll-hint pointer-events-none" style={{ opacity: 0, zIndex: 2 }}>
+      <div className="flex items-center justify-center gap-2 animate-pulse">
+        <img src={svgSrc} width={18} height={18} alt={hintText.toLowerCase() + " hint"} loading="lazy" />
+        <span className="text-white text-xs sm:text-sm tracking-widest" style={{ fontFamily: "Vercetti, Arial, sans-serif" }}>{hintText}</span>
       </div>
     </div>
   );
