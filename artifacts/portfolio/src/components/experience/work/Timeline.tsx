@@ -46,7 +46,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelX = isMobile ? 0 : (point.position === 'left'
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2);
-  const panelGroupY = isMobile ? 1.1 : 0;
+  const panelGroupY = isMobile ? 0.5 : 0;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
   return (
@@ -116,7 +116,7 @@ const Timeline = ({ progress }: { progress: number }) => {
     if (isActive) {
       const position = curve.getPoint(progress);
       camera.position.x = THREE.MathUtils.damp(camera.position.x, (isMobile ? 0 : -2) + position.x, 4, delta);
-      camera.position.y = THREE.MathUtils.damp(camera.position.y, (isMobile ? -36 : -39) + position.z, 4, delta);
+      camera.position.y = THREE.MathUtils.damp(camera.position.y, (isMobile ? -32 : -39) + position.z, 4, delta);
       camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
     }
   });
