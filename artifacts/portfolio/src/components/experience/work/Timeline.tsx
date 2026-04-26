@@ -38,6 +38,13 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     maxWidth: 3,
   }), [textProps]);
 
+  const panelWidth = 2.7;
+  const panelHeight = 1.35;
+  const panelX = point.position === 'left'
+    ? -0.3 - panelWidth / 2
+    : 0.3 + panelWidth / 2;
+  const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.5;
+
   return (
     <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
       <Box args={[0.2, 0.2, 0.2]} position={[0, 0, -0.1]} scale={[1 - diff, 1 - diff, 1 - diff]}>
@@ -45,6 +52,15 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
         <Edges color="white" lineWidth={1.5} />
       </Box>
       <group>
+        <mesh position={[panelX, -0.4, -0.15]}>
+          <planeGeometry args={[panelWidth, panelHeight]} />
+          <meshBasicMaterial
+            color="#0a0a18"
+            transparent
+            opacity={panelOpacity}
+            depthWrite={false}
+          />
+        </mesh>
         <group position={getPoint}>
           <Text {...textProps} fontSize={0.3} position={[-diff / 2, 0, 0]}>
             {point.year}
