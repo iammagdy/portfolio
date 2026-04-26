@@ -2,7 +2,9 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+pnpm workspace monorepo using TypeScript. Migrated from Vercel/Next.js to Replit Vite + React.
+
+This is Magdy Saber's 3D portfolio — a creative frontend showcase using React Three Fiber, GSAP, Zustand, and custom 3D models (GLB).
 
 ## Stack
 
@@ -10,18 +12,29 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+- **Frontend**: React + Vite (artifacts/portfolio)
+- **3D**: React Three Fiber + Three.js + Drei
+- **Animation**: GSAP + @gsap/react
+- **State management**: Zustand
+- **Fonts**: Soria (TTF) + Vercetti (WOFF) — local fonts in public/
+- **API framework**: Express 5 (artifacts/api-server, not used by portfolio)
+- **Database**: PostgreSQL + Drizzle ORM (not used by portfolio)
+
+## Artifacts
+
+- `artifacts/portfolio` — Main 3D portfolio web app (preview path: `/`)
+- `artifacts/api-server` — Express backend (not used by portfolio currently)
 
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+- `pnpm --filter @workspace/portfolio run dev` — run portfolio locally
+
+## Path Aliases (portfolio)
+
+- `@/` → `src/`
+- `@stores` → `src/stores`
+- `@constants` → `src/constants`
+- `@types` → `src/types`
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
