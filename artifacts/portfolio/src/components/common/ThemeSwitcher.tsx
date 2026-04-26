@@ -38,15 +38,15 @@ const ThemeSwitcher = () => {
           type="button"
           onClick={toggleTheme}
           aria-label={`Switch theme (current: ${theme.color})`}
-          className="hover:cursor-pointer p-1 -m-1 rounded-md hover:bg-white/10 transition"
+          className="hover:cursor-pointer p-2 -m-2 rounded-lg hover:bg-white/10 transition"
         >
           <img
             src="icons/night-mode.svg"
-            width={24}
-            height={24}
+            width={40}
+            height={40}
             alt=""
             loading="lazy"
-            className="w-5 h-5 sm:w-6 sm:h-6"
+            className="w-9 h-9 sm:w-10 sm:h-10"
           />
         </button>
       </div>
