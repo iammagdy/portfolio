@@ -26,7 +26,7 @@ const Experience = () => {
     const e = data.range(0.7, 0.2);
 
     if (groupRef.current && !isActive) {
-      groupRef.current.position.y = d > 0 ? -1 : -30;
+      groupRef.current.position.y = d > 0 ? (isMobile ? -2.5 : -1) : -30;
       groupRef.current.visible = d > 0;
     }
 
@@ -51,7 +51,7 @@ const Experience = () => {
   };
 
   return (
-    <group position={[0, -41.5, 12]} rotation={[-Math.PI / 2, 0 ,-Math.PI / 2]} scale={isMobile ? 0.78 : 1}>
+    <group position={[0, -41.5, 12]} rotation={[-Math.PI / 2, 0 ,-Math.PI / 2]} scale={isMobile ? 0.63 : 1}>
       <group rotation={[0, 0, Math.PI / 2]}>
         <group ref={titleRef} position={[isMobile ? -1.8 : -3.6, 2, -2]}>
           {getTitle()}
