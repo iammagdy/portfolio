@@ -10,7 +10,6 @@ import CloudContainer from "../models/Cloud";
 import StarsContainer from "../models/Stars";
 import WindowModel from "../models/WindowModel";
 import TextWindow from "./TextWindow";
-import WelcomeText from "./WelcomeText";
 
 const Hero = () => {
   const titleRef = useRef<THREE.Mesh>(null);
@@ -42,7 +41,6 @@ const Hero = () => {
       <group position={[0, -25, 5.69]}>
         <pointLight castShadow position={[1, 1, -2.5]} intensity={60} distance={10}/>
         <WindowModel receiveShadow/>
-        <WelcomeText />
         <TextWindow/>
       </group>
     </>
