@@ -63,10 +63,10 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
         y: hovered ? 1.3 : 1,
         z: hovered ? 1.3 : 1,
       }, 0)
-      .to(title.position, { y: hovered ? 0.7 : -0.8 }, 0)
-      .to(textBox.position, { y: hovered ? 0.7 : 0 }, 0)
+      .to(title.position, { y: hovered ? 1.2 : -0.8 }, 0)
+      .to(textBox.position, { y: hovered ? 1.2 : 0 }, 0)
       .to(textBox, { fillOpacity: hovered ? 1 : 0, duration: 0.4 }, 0)
-      .to(dateGroup.position, { y: hovered ? 2.6 : 1.4 }, 0)
+      .to(dateGroup.position, { y: hovered ? 2.7 : 1.4 }, 0)
       .to(mesh.scale, { y: hovered ? 2 : 1 }, 0)
       .to((mesh as THREE.Mesh).material, { opacity: hovered ? 0.95 : 0.3 }, 0)
       .to(mesh.position, { y: hovered ? 1 : 0 }, 0);
@@ -128,7 +128,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           anchorX="left"
           anchorY="bottom"
           maxWidth={4}
-          fontSize={0.8}>
+          fontSize={0.6}>
           {project.title}
         </Text>
         <group position={[-1.25, 1.4, 0.01]}>
@@ -146,9 +146,10 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
         </group>
         <Text
           {...subtitleProps}
-          maxWidth={3.8}
+          maxWidth={3.7}
           position={[-1.9, 2.3, 0.1]}
-          fontSize={0.2}>
+          fontSize={0.14}
+          lineHeight={1.2}>
           {project.subtext}
         </Text>
         <group ref={buttonsGroupRef}>
@@ -163,7 +164,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
             return (
               <group
                 key={`${i}-${button.text}`}
-                position={[x, -0.6, isDisabled ? 0 : -1]}
+                position={[x, -0.9, isDisabled ? 0 : -1]}
                 scale={[0, 0, 1]}
                 onClick={isDisabled ? handleDisabledClick : handleButtonClick(button)}
                 onPointerDown={isDisabled ? handleDisabledClick : undefined}
