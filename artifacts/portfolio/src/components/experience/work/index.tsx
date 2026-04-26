@@ -1,4 +1,5 @@
 import { ScrollControls } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { usePortalStore, useScrollStore } from "@stores";
 import { useEffect } from "react";
 import * as THREE from "three";
@@ -6,6 +7,8 @@ import { Memory } from "../../models/Memory";
 import Timeline from "./Timeline";
 
 const Work = () => {
+  const { size } = useThree();
+  const isMobile = size.width < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
   const { scrollProgress, setScrollProgress } = useScrollStore();
 
@@ -50,7 +53,10 @@ const Work = () => {
         <shadowMaterial opacity={0.1} />
       </mesh>
       <ScrollControls style={{ zIndex: -1}} pages={5} maxSpeed={0.25}>
-        <Memory scale={new THREE.Vector3(5, 5, 5)} position={new THREE.Vector3(0, -6, 1)}/>
+        <Memory
+          scale={isMobile ? new THREE.Vector3(2.0, 2.0, 2.0) : new THREE.Vector3(5, 5, 5)}
+          position={isMobile ? new THREE.Vector3(0, -2, -1) : new THREE.Vector3(0, -6, 1)}
+        />
         <Timeline progress={isActive ? scrollProgress : 0} />
       </ScrollControls>
     </group>

@@ -36,9 +36,18 @@ const Projects = () => {
     }
   });
 
+  const wandererScale = isMobile ? 0.55 : 1.5;
+  const wandererPos = isMobile
+    ? new THREE.Vector3(0, -0.3, -4)
+    : new THREE.Vector3(0, -1, -1);
+
   return (
     <group>
-      <Wanderer rotation={new THREE.Euler(0, Math.PI / 6, 0)} scale={new THREE.Vector3(1.5, 1.5, 1.5)} position={new THREE.Vector3(0, -1, -1)}/>
+      <Wanderer
+        rotation={new THREE.Euler(0, Math.PI / 6, 0)}
+        scale={new THREE.Vector3(wandererScale, wandererScale, wandererScale)}
+        position={wandererPos}
+      />
       {!isMobile && <ProjectsCarousel />}
     </group>
   );
