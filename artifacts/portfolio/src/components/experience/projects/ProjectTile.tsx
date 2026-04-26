@@ -1,8 +1,7 @@
 import { Edges, Text, TextProps } from "@react-three/drei";
-import { ThreeEvent } from "@react-three/fiber";
+import { ThreeEvent, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { isMobile } from "react-device-detect";
 import * as THREE from "three";
 
 import { usePortalStore } from "@stores";
@@ -18,6 +17,8 @@ interface ProjectTileProps {
 }
 
 const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: ProjectTileProps) => {
+  const { size } = useThree();
+  const isMobile = size.width < 768;
   const projectRef = useRef<THREE.Group>(null);
   const hoverAnimRef = useRef<gsap.core.Timeline | null>(null);
   const [hovered, setHovered] = useState(false);
