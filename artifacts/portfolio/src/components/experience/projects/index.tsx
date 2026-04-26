@@ -1,4 +1,4 @@
-import { useScroll } from "@react-three/drei";
+import { useScroll, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect } from "react";
@@ -6,6 +6,16 @@ import * as THREE from "three";
 import { usePortalStore } from "@stores";
 import { Wanderer } from "../../models/Wanderer";
 import ProjectsCarousel from "./ProjectsCarousel";
+
+const WandererTile = () => {
+  const texture = useTexture('/images/wanderer-tile.png');
+  return (
+    <mesh position={[0, 0, 0.01]}>
+      <planeGeometry args={[3.0, 3.0]} />
+      <meshBasicMaterial map={texture} />
+    </mesh>
+  );
+};
 
 const Projects = () => {
   const { camera, size } = useThree();
@@ -38,14 +48,18 @@ const Projects = () => {
 
   return (
     <group>
-      {!isMobile && (
-        <Wanderer
-          rotation={new THREE.Euler(0, Math.PI / 6, 0)}
-          scale={new THREE.Vector3(1.5, 1.5, 1.5)}
-          position={new THREE.Vector3(0, -1, -1)}
-        />
+      {isMobile ? (
+        <WandererTile />
+      ) : (
+        <>
+          <Wanderer
+            rotation={new THREE.Euler(0, Math.PI / 6, 0)}
+            scale={new THREE.Vector3(1.5, 1.5, 1.5)}
+            position={new THREE.Vector3(0, -1, -1)}
+          />
+          <ProjectsCarousel />
+        </>
       )}
-      {!isMobile && <ProjectsCarousel />}
     </group>
   );
 };
