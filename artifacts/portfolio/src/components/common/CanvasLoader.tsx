@@ -5,7 +5,6 @@ import { AdaptiveDpr, Preload, ScrollControls, useProgress } from "@react-three/
 import { Canvas } from "@react-three/fiber";
 import gsap from "gsap";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { isMobile } from "react-device-detect";
 
 import { useThemeStore } from "@stores";
 
@@ -16,12 +15,19 @@ import { ScrollHint } from "./ScrollHint";
 import ThemeSwitcher from "./ThemeSwitcher";
 // import {Perf} from "r3f-perf"
 
+const getResponsiveBorder = (width: number) => {
+  if (width < 640) return { inset: 0, width: "100%", height: "100%" };
+  if (width < 1024)
+    return { inset: "0.5rem", width: "calc(100% - 1rem)", height: "calc(100% - 1rem)" };
+  return { inset: "1rem", width: "calc(100% - 2rem)", height: "calc(100% - 2rem)" };
+};
+
 const CanvasLoader = (props: { children: React.ReactNode }) => {
   const ref= useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backgroundColor = useThemeStore((state) => state.theme.color);
   const { progress } = useProgress();
-  const [canvasStyle, setCanvasStyle] = useState<React.CSSProperties>({
+  const [canvasStyle, setCanvasStyle] = useState<React.CSSProperties>(() => ({
     position: "absolute",
     top: 0,
     bottom: 0,
@@ -29,18 +35,16 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
     right: 0,
     opacity: 0,
     overflow: "hidden",
-  });
+    ...getResponsiveBorder(typeof window !== "undefined" ? window.innerWidth : 1280),
+  }));
 
   useEffect(() => {
-    if (!isMobile) {
-      const borderStyle = {
-        inset: '1rem',
-        width: 'calc(100% - 2rem)',
-        height: 'calc(100% - 2rem)',
-      };
-      setCanvasStyle({ ...canvasStyle, ...borderStyle})
-    }
-  }, [isMobile]);
+    const handleResize = () => {
+      setCanvasStyle((prev) => ({ ...prev, ...getResponsiveBorder(window.innerWidth) }));
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useGSAP(() => {
     if (progress === 100) {
