@@ -38,7 +38,7 @@ const Projects = () => {
 
   const wandererScale = isMobile ? 0.55 : 1.5;
   const wandererPos = isMobile
-    ? new THREE.Vector3(0, -0.3, -4)
+    ? new THREE.Vector3(0, 1.2, -2)
     : new THREE.Vector3(0, -1, -1);
 
   return (
