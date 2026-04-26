@@ -110,7 +110,7 @@ const Hero = () => {
   const fontProps = {
     font: "./soria-font.ttf",
     fontSize: isMobile ? 0.7 : 1.2,
-    color: isLight ? "#000000" : "#ffffff",
+    color: "#ffffff",
     outlineWidth: isLight ? 0 : "5%",
     outlineColor,
     outlineOpacity: isLight ? 0 : 1,
