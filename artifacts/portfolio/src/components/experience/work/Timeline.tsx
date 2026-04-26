@@ -50,7 +50,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
   return (
-    <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
+    <group position={point.point} scale={isMobile ? 0.85 : 0.6}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
