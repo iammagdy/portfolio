@@ -72,4 +72,11 @@ export const WORK_TIMELINE: WorkTimelinePoint[] = [
     subtitle: 'Concentrix',
     position: 'left',
   },
+  {
+    point: new THREE.Vector3(1.5, 0.5, -11.1),
+    year: '2026',
+    title: 'AI Product Engineer',
+    description: 'Building production-ready apps at 10x speed using an AI-first workflow.',
+    position: 'right',
+  },
 ]
