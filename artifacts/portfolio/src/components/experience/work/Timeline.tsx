@@ -90,7 +90,13 @@ const Timeline = ({ progress }: { progress: number }) => {
   const curve = useMemo(() => new THREE.CatmullRomCurve3(timeline.map(p => p.point), false), [timeline]);
   const curvePoints = useMemo(() => curve.getPoints(500), [curve]);
   const visibleCurvePoints = useMemo(() => curvePoints.slice(0, Math.max(1, Math.ceil(progress * curvePoints.length))), [curvePoints, progress]);
-  const visibleTimelinePoints = useMemo(() => timeline.slice(0, Math.max(1, Math.round(progress * (timeline.length - 1) + 1))), [timeline, progress]);
+  const activeIndex = progress * (timeline.length - 1);
+  const visibleTimelinePoints = useMemo(() => {
+    const windowRadius = 1.2;
+    return timeline
+      .map((point, i) => ({ point, i }))
+      .filter(({ i }) => i <= activeIndex + 0.05 && Math.abs(i - activeIndex) <= windowRadius);
+  }, [timeline, activeIndex]);
 
   const [visibleDashedCurvePoints, setVisibleDashedCurvePoints] = useState<THREE.Vector3[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -155,8 +161,8 @@ const Timeline = ({ progress }: { progress: number }) => {
         />
       )}
       <group ref={groupRef}>
-        {visibleTimelinePoints.map((point, i) => {
-          const diff = Math.min(2 * Math.max(i - (progress * (timeline.length - 1)), 0), 1);
+        {visibleTimelinePoints.map(({ point, i }) => {
+          const diff = Math.min(Math.abs(i - activeIndex), 1);
           return <TimelinePoint point={point} key={i} diff={diff} />;
         })}
       </group>
