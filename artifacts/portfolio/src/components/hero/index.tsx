@@ -3,6 +3,7 @@
 import { Text } from "@react-three/drei";
 
 import { useProgress } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
@@ -14,6 +15,8 @@ import TextWindow from "./TextWindow";
 const Hero = () => {
   const titleRef = useRef<THREE.Mesh>(null);
   const { progress } = useProgress();
+  const { size } = useThree();
+  const isMobile = size.width < 768;
 
   useEffect(() => {
     if (progress === 100 && titleRef.current) {
@@ -30,12 +33,12 @@ const Hero = () => {
 
   const fontProps = {
     font: "./soria-font.ttf",
-    fontSize: 1.2,
+    fontSize: isMobile ? 0.7 : 1.2,
   };
 
   return (
     <>
-      <Text position={[0, 2, -10]} {...fontProps} ref={titleRef}>Hi, I am Magdy Saber.</Text>
+      <Text position={[0, isMobile ? 1.5 : 2, -10]} {...fontProps} ref={titleRef}>Hi, I am Magdy Saber.</Text>
       <StarsContainer />
       <CloudContainer/>
       <group position={[0, -25, 5.69]}>
