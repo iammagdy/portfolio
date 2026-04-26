@@ -34,12 +34,14 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const titleProps = useMemo(() => ({
     ...textProps,
     font: "./soria-font.ttf",
-    fontSize: 0.6,
-    maxWidth: 3,
+    fontSize: 0.4,
+    maxWidth: 3.2,
+    lineHeight: 1.1,
   }), [textProps]);
 
-  const panelWidth = 3.4;
-  const panelHeight = 1.7;
+  const panelWidth = 3.6;
+  const panelHeight = 2.7;
+  const panelCenterY = -1.0;
   const panelX = point.position === 'left'
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2;
@@ -52,7 +54,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
         <Edges color="white" lineWidth={1.5} />
       </Box>
       <group>
-        <mesh position={[panelX, -0.4, -0.15]}>
+        <mesh position={[panelX, panelCenterY, -0.15]}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
             color="#0a0a18"
@@ -65,11 +67,11 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
           <Text {...textProps} fontSize={0.3} position={[-diff / 2, 0, 0]}>
             {point.year}
           </Text>
-          <group position={[0, -0.5, 0]}>
-            <Text {...titleProps} fontSize={0.6} maxWidth={3} position={[0, -diff / 2, 0]}>
+          <group position={[0, -0.8, 0]}>
+            <Text {...titleProps} position={[0, -diff / 2, 0]}>
               {point.title}
             </Text>
-            <Text {...textProps} fontSize={0.2} maxWidth={3} position={[0, -0.4 - diff, 0]}>
+            <Text {...textProps} fontSize={0.2} maxWidth={3.2} position={[0, -1.5 - diff, 0]}>
               {point.subtitle}
             </Text>
           </group>
