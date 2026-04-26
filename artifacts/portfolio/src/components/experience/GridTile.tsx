@@ -41,8 +41,8 @@ const GridTile = (props: GridTileProps) => {
         letterSpacing: 0.4,
       });
       gsap.to(titleRef.current.position, {
-        x: isWork ? 1: -1,
-        y: isWork ? -1.7 : 1.5,
+        x: isWork ? 0.8 : -0.8,
+        y: isWork ? -1.1 : 1.1,
         duration: 0.5,
       });
     }
@@ -169,8 +169,8 @@ const GridTile = (props: GridTileProps) => {
 
     const isWork = id === 'work';
     const points = isWork ?
-      [[-1, 2, 0], [-1, -2, 0], [3, -2, 0]] :
-      [[-3, 2, 0], [1, -2, 0], [1, 2, 0]];
+      [[-0.75, 1.5, 0], [-0.75, -1.5, 0], [2.25, -1.5, 0]] :
+      [[-2.25, 1.5, 0], [0.75, -1.5, 0], [0.75, 1.5, 0]];
 
     return <primitive object={TriangleGeometry({ points })} attach="geometry" />
   };

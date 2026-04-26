@@ -20,7 +20,7 @@ const ProjectsCarousel = () => {
 
   const tiles = useMemo(() => {
     const fov = Math.PI;
-    const distance = 13;
+    const distance = isMobile ? 8 : 13;
     const count = PROJECTS.length;
 
     return PROJECTS.map((project, i) => {
