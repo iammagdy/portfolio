@@ -41,15 +41,16 @@ const Hero = () => {
     }
   }, [progress]);
 
+  const isLightRef = useRef(isLight);
   useEffect(() => {
-    if (isLight && isOverlapRef.current) {
+    isLightRef.current = isLight;
+    if (isOverlapRef.current) {
       isOverlapRef.current = false;
       setOutlineColor("#ffffff");
     }
   }, [isLight]);
 
   useFrame(() => {
-    if (isLight) return;
     const text = titleRef.current;
     if (!text || !text.textRenderInfo) return;
     const blockBounds = text.textRenderInfo.blockBounds;
@@ -103,7 +104,7 @@ const Hero = () => {
 
     if (overlaps !== isOverlapRef.current) {
       isOverlapRef.current = overlaps;
-      setOutlineColor(overlaps ? "#000000" : "#ffffff");
+      setOutlineColor(overlaps ? (isLightRef.current ? "#888888" : "#000000") : "#ffffff");
     }
   });
 
@@ -111,9 +112,9 @@ const Hero = () => {
     font: "./soria-font.ttf",
     fontSize: isMobile ? 0.7 : 1.2,
     color: "#ffffff",
-    outlineWidth: isLight ? 0 : "5%",
+    outlineWidth: "5%",
     outlineColor,
-    outlineOpacity: isLight ? 0 : 1,
+    outlineOpacity: 1,
   };
 
   return (
