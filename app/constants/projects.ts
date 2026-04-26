@@ -48,7 +48,7 @@ export const PROJECTS: Project[] = [
     title: 'Portfolio',
     date: 'Apr 2025',
     subtext: '[Enter a meta joke].',
-    url: 'https://github.com/magdysaber/magdysaber.github.io',
+    url: 'https://github.com/magdysaber/magdysaber.com',
   },
   {
     title: 'Focus Clock',

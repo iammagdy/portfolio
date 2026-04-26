@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Magdy Saber - Frontend Engineer",
     description: "Frontend engineer by profession, creative at heart.",
-    url: "https://magdysaber.github.io",
+    url: "https://magdysaber.com",
     siteName: "Magdy Saber's Portfolio",
     locale: "en_US",
     type: "website",
