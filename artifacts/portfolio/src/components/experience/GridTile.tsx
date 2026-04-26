@@ -42,7 +42,7 @@ const GridTile = (props: GridTileProps) => {
       });
       gsap.to(titleRef.current.position, {
         x: 0,
-        y: isWork ? -0.92 : 0.92,
+        y: isWork ? -0.92 : 0.82,
         duration: 0.5,
       });
     }
