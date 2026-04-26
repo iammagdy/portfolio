@@ -38,6 +38,7 @@ const GridTile = (props: GridTileProps) => {
         maxWidth: 2.2,
         color: '#FFF',
         letterSpacing: 0.1,
+        textAlign: 'center',
       });
       gsap.to(titleRef.current.position, {
         x: 0,
@@ -133,7 +134,7 @@ const GridTile = (props: GridTileProps) => {
     anchorY: 'bottom',
     fontSize: 0.7,
     color: 'white',
-    textAlign: textAlign,
+    textAlign: isMobile ? 'center' : textAlign,
     fillOpacity: 0,
   };
 
