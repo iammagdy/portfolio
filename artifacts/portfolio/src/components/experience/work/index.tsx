@@ -1,10 +1,20 @@
-import { ScrollControls } from "@react-three/drei";
+import { ScrollControls, useTexture } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { usePortalStore, useScrollStore } from "@stores";
 import { useEffect } from "react";
 import * as THREE from "three";
 import { Memory } from "../../models/Memory";
 import Timeline from "./Timeline";
+
+const MemoryTile = () => {
+  const texture = useTexture('/images/memory-tile.png');
+  return (
+    <mesh position={[0, 0, 0.01]}>
+      <planeGeometry args={[3.0, 2.05]} />
+      <meshBasicMaterial map={texture} />
+    </mesh>
+  );
+};
 
 const Work = () => {
   const { size } = useThree();
@@ -52,10 +62,14 @@ const Work = () => {
         <planeGeometry args={[4, 4, 1]} />
         <shadowMaterial opacity={0.1} />
       </mesh>
-      <ScrollControls style={{ zIndex: -1}} pages={5} maxSpeed={0.25}>
-        <Memory scale={new THREE.Vector3(5, 5, 5)} position={new THREE.Vector3(0, -6, 1)}/>
-        <Timeline progress={isActive ? scrollProgress : 0} />
-      </ScrollControls>
+      {isMobile && !isActive ? (
+        <MemoryTile />
+      ) : (
+        <ScrollControls style={{ zIndex: -1}} pages={5} maxSpeed={0.25}>
+          <Memory scale={new THREE.Vector3(5, 5, 5)} position={new THREE.Vector3(0, -6, 1)}/>
+          <Timeline progress={isActive ? scrollProgress : 0} />
+        </ScrollControls>
+      )}
     </group>
   );
 };
