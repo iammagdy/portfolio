@@ -46,6 +46,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelX = point.position === 'left'
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2;
+  const panelGroupY = isMobile ? 1.1 : 0;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
   return (
@@ -61,7 +62,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
           <lineBasicMaterial color="white" depthTest={false} />
         </Edges>
       </Box>
-      <group position={[panelX, 0, 0]}>
+      <group position={[panelX, panelGroupY, 0]}>
         <mesh position={[0, panelCenterY, -0.15]} renderOrder={11}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
