@@ -2,7 +2,7 @@
 
 A fully interactive 3D portfolio built with React, Three.js, and GSAP. Scroll through a living scene, switch between day and night, and step through portal tiles into the Experience section.
 
-> Inspired by the work of [Mohit Virli](https://github.com/mohitvirli).
+> Inspired by the work of Mohit.
 
 ---
 
