@@ -4,7 +4,6 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { usePortalStore } from '@stores';
 import gsap from "gsap";
 import { useEffect, useRef } from 'react';
-import { isMobile } from 'react-device-detect';
 import * as THREE from 'three';
 import { TriangleGeometry } from './Triangle';
 
@@ -24,14 +23,15 @@ const GridTile = (props: GridTileProps) => {
   const hoverBoxRef = useRef<THREE.Mesh>(null);
   const portalRef = useRef(null);
   const { title, textAlign, children, color, position, id } = props;
-  const { camera } = useThree();
+  const { camera, size } = useThree();
+  const isMobile = size.width < 768;
   const setActivePortal = usePortalStore((state) => state.setActivePortal);
   const isActive = usePortalStore((state) => state.activePortalId === id);
   const activePortalId = usePortalStore((state) => state.activePortalId);
   const data = useScroll();
 
   useEffect(() => {
-    // Hanlde the hover box and title animation for mobile.
+    // Handle the hover box and title animation for mobile.
     if (isMobile && titleRef.current) {
       const isWork = id === 'work';
       gsap.to(titleRef.current, {
@@ -46,7 +46,7 @@ const GridTile = (props: GridTileProps) => {
         duration: 0.5,
       });
     }
-  }, []);
+  }, [isMobile]);
 
   useFrame(() => {
     const d = data.range(0.95, 0.05);

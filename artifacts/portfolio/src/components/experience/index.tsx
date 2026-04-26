@@ -1,14 +1,15 @@
 import { Text, useScroll } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { usePortalStore } from "@stores";
 import { useRef } from "react";
-import { isMobile } from "react-device-detect";
 import * as THREE from 'three';
 import GridTile from "./GridTile";
 import Projects from "./projects";
 import Work from "./work";
 
 const Experience = () => {
+  const { size } = useThree();
+  const isMobile = size.width < 768;
   const titleRef = useRef<THREE.Group>(null);
   const groupRef = useRef<THREE.Group>(null);
   const data = useScroll();
@@ -51,10 +52,6 @@ const Experience = () => {
 
   return (
     <group position={[0, -41.5, 12]} rotation={[-Math.PI / 2, 0 ,-Math.PI / 2]} scale={isMobile ? 0.78 : 1}>
-      {/* <mesh receiveShadow position={[-5, 0, 0.1]}>
-        <planeGeometry args={[10, 5, 1]} />
-        <shadowMaterial opacity={0.1} />
-      </mesh> */}
       <group rotation={[0, 0, Math.PI / 2]}>
         <group ref={titleRef} position={[isMobile ? -1.8 : -3.6, 2, -2]}>
           {getTitle()}
