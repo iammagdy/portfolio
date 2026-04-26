@@ -155,12 +155,18 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
           {buttons.map((button, i) => {
             const isDisabled = !!button.disabled || !button.url;
             const x = buttonXPositions[i] ?? 1.3;
+            const baseLabel = button.text.replace(/\s*↗\s*$/, '');
+            const label = isDisabled ? `${baseLabel} • SOON` : button.text;
+            const handleDisabledClick = (e: ThreeEvent<MouseEvent>) => {
+              e.stopPropagation();
+            };
             return (
               <group
                 key={`${i}-${button.text}`}
                 position={[x, -0.6, isDisabled ? 0 : -1]}
                 scale={[0, 0, 1]}
-                onClick={isDisabled ? undefined : handleButtonClick(button)}
+                onClick={isDisabled ? handleDisabledClick : handleButtonClick(button)}
+                onPointerDown={isDisabled ? handleDisabledClick : undefined}
                 onPointerOver={isDisabled ? undefined : () => { document.body.style.cursor = 'pointer'; }}
                 onPointerOut={isDisabled ? undefined : () => { document.body.style.cursor = 'auto'; }}>
                 <mesh>
@@ -175,10 +181,10 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
                 <Text
                   {...subtitleProps}
                   color="white"
-                  fillOpacity={isDisabled ? 0.65 : 1}
-                  position={[-0.4, 0.15, 0.2]}
-                  fontSize={0.25}>
-                  {button.text}
+                  fillOpacity={isDisabled ? 0.7 : 1}
+                  position={[-0.5, 0.13, 0.2]}
+                  fontSize={isDisabled ? 0.18 : 0.25}>
+                  {label}
                 </Text>
               </group>
             );
