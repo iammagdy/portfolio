@@ -1,115 +1,79 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export const TouchPanControls = () => {
-  const { camera } = useThree()
-  const touchStartRef = useRef({ x: 0, y: 0 })
-  const cameraRotationRef = useRef({ x: 0, y: 0 })
-  const targetRotationRef = useRef({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
+  const { camera, gl } = useThree();
+  const isDraggingRef = useRef(false);
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
+  const startRotYRef = useRef(0);
+  const targetRotYRef = useRef(0);
+  const axisLockedRef = useRef<"horizontal" | "vertical" | null>(null);
 
-  // Set initial camera and target rotation values
   useEffect(() => {
-    cameraRotationRef.current = {
-      x: camera.rotation.y,
-      y: camera.rotation.x
-    }
-    targetRotationRef.current = {
-      x: camera.rotation.y,
-      y: camera.rotation.x
-    }
-  }, [camera])
+    targetRotYRef.current = camera.rotation.y;
+  }, [camera]);
 
-  // Animation loop for smooth camera movement
   useFrame(() => {
-    if (!camera) return
+    if (!camera) return;
+    const dampingFactor = 0.12;
+    camera.rotation.y += (targetRotYRef.current - camera.rotation.y) * dampingFactor;
+  });
 
-    // Apply smooth damping to camera rotation
-    const dampingFactor = 0.05
-
-    camera.rotation.y += (targetRotationRef.current.x - camera.rotation.y) * dampingFactor
-    camera.rotation.x += (targetRotationRef.current.y - camera.rotation.x) * dampingFactor
-
-    // Update camera matrix
-    camera.updateProjectionMatrix()
-  })
-
-  // Handle touch events
   useEffect(() => {
+    const target = gl.domElement;
+
     const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 1) {
-        setIsDragging(true)
-        touchStartRef.current = {
-          x: e.touches[0].clientX,
-          y: e.touches[0].clientY
-        }
-        // Remember current rotation as starting point
-        cameraRotationRef.current = {
-          x: targetRotationRef.current.x,
-          y: targetRotationRef.current.y
-        }
-      }
-    }
+      if (e.touches.length !== 1) return;
+      isDraggingRef.current = true;
+      axisLockedRef.current = null;
+      touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
+      startRotYRef.current = targetRotYRef.current;
+    };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging || e.touches.length !== 1) return
+      if (!isDraggingRef.current || e.touches.length !== 1) return;
 
-      // Calculate touch movement delta
-      const touchX = e.touches[0].clientX
-      const deltaX = touchX - touchStartRef.current.x
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const deltaX = touchX - touchStartXRef.current;
+      const deltaY = touchY - touchStartYRef.current;
 
-      // Update target rotation with sensitivity adjustment
-      const sensitivity = 0.005
-      const newRotationY = cameraRotationRef.current.x + deltaX * sensitivity
+      if (!axisLockedRef.current) {
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+        if (absX < 6 && absY < 6) return;
+        axisLockedRef.current = absX >= absY ? "horizontal" : "vertical";
+      }
 
-      // Apply rotation limits to prevent over-rotation
-      const maxRotation = Math.PI / 3
-      targetRotationRef.current.x = Math.max(Math.min(newRotationY, maxRotation), -maxRotation)
-    }
+      if (axisLockedRef.current !== "horizontal") return;
+
+      e.preventDefault();
+
+      const sensitivity = 0.006;
+      const newRotation = startRotYRef.current + deltaX * sensitivity;
+      const maxRotation = Math.PI / 3;
+      targetRotYRef.current = Math.min(Math.max(newRotation, -maxRotation), maxRotation);
+    };
 
     const handleTouchEnd = () => {
-      if (isDragging) {
-        setIsDragging(false)
-      }
-    }
+      isDraggingRef.current = false;
+      axisLockedRef.current = null;
+    };
 
-    // Momentum scrolling when finger is lifted
-    const handleTouchMomentum = () => {
-      if (!isDragging && Math.abs(targetRotationRef.current.x - camera.rotation.y) < 0.001) {
-        // When movement nearly stops, update the reference point
-        cameraRotationRef.current = {
-          x: camera.rotation.y,
-          y: camera.rotation.x
-        }
-      }
-    }
+    target.addEventListener("touchstart", handleTouchStart, { passive: true });
+    target.addEventListener("touchmove", handleTouchMove, { passive: false });
+    target.addEventListener("touchend", handleTouchEnd);
+    target.addEventListener("touchcancel", handleTouchEnd);
 
-    // Add event listeners
-    document.addEventListener('touchstart', handleTouchStart, { passive: false })
-    document.addEventListener('touchmove', handleTouchMove, { passive: false })
-    document.addEventListener('touchend', handleTouchEnd)
-
-    // For momentum effect
-    const momentumInterval = setInterval(handleTouchMomentum, 100)
-
-    // Clean up event listeners
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
-      clearInterval(momentumInterval)
-    }
-  }, [camera, isDragging])
+      target.removeEventListener("touchstart", handleTouchStart);
+      target.removeEventListener("touchmove", handleTouchMove);
+      target.removeEventListener("touchend", handleTouchEnd);
+      target.removeEventListener("touchcancel", handleTouchEnd);
+    };
+  }, [gl]);
 
-  // Prevent default behavior to avoid browser gestures interfering
-  // useEffect(() => {
-  //   const preventDefault = (e) => e.preventDefault()
-  //   document.addEventListener('touchmove', preventDefault, { passive: false })
-
-  //   return () => {
-  //     document.removeEventListener('touchmove', preventDefault)
-  //   }
-  // }, [])
-
-  return null
-}
+  return null;
+};
