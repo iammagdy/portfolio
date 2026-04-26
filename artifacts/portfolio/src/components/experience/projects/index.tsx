@@ -17,6 +17,8 @@ const Projects = () => {
     // Hide scrollbar when active.
     data.el.style.overflow = isActive ? 'hidden' : 'auto';
     if (isActive) {
+      gsap.killTweensOf(camera.position);
+      gsap.killTweensOf(camera.rotation);
       if (isMobile) {
         gsap.to(camera.position, { z: 11.5, y: -39, x: 0, duration: 1 });
       } else {

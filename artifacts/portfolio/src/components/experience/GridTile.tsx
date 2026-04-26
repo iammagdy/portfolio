@@ -96,17 +96,18 @@ const GridTile = (props: GridTileProps) => {
 
   const exitPortal = (force = false) => {
     if (!force && !activePortalId) return;
-    setActivePortal(null)
+    setActivePortal(null);
 
+    // Kill any in-flight camera tweens so the scroll system can cleanly
+    // resume driving rotation.x / position.y / position.z via useFrame.
+    gsap.killTweensOf(camera.position);
+    gsap.killTweensOf(camera.rotation);
+
+    // Only reset x — the scroll system does not control it, but the
+    // Projects portal may have moved it (desktop: x=2).
     gsap.to(camera.position, {
       x: 0,
-      duration: 1,
-    });
-
-    gsap.to(camera.rotation, {
-      x: -Math.PI / 2,
-      y: 0,
-      duration: 1,
+      duration: 0.8,
     });
 
     gsap.to(portalRef.current, {
