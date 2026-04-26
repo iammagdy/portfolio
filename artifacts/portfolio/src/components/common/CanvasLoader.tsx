@@ -8,7 +8,6 @@ import { Suspense, useEffect, useRef, useState } from "react";
 
 import { useThemeStore } from "@stores";
 
-import ContactButton from "./ContactButton";
 import Preloader from "./Preloader";
 import ProgressLoader from "./ProgressLoader";
 import { ScrollHint } from "./ScrollHint";
@@ -94,7 +93,6 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
         </Canvas>
         <ProgressLoader progress={progress} />
       </div>
-      <ContactButton />
       <ThemeSwitcher />
       <ScrollHint />
     </div>

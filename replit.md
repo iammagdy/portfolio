@@ -33,11 +33,11 @@ The Replit preview proxy routes by artifact `paths`:
 
 This means the portfolio's frontend can call `fetch("/api/...")` directly — no env-driven base URL or Vite proxy is needed in dev or prod. Both artifacts have their own workflows that run independently.
 
-## Contact Button
+## Contact Link ("Email me")
 
-- Component: `artifacts/portfolio/src/components/common/ContactButton.tsx`
-- Right-edge pill labeled "Contact me" with the same GSAP slide-in / scroll-out animation as the previous Awwards badge.
-- Clicking opens a `mailto:contact@magdysaber.com` link (with a pre-filled subject and body) in the visitor's email app — no backend or third-party email service required.
+- The contact entry point lives in the 3D footer alongside LinkedIn and GitHub. It is defined in `artifacts/portfolio/src/constants/footer.ts` as a regular `FooterLink` with a `mailto:contact@magdysaber.com` URL (pre-filled subject and body) and an envelope icon at `public/icons/email.svg`.
+- Rendering and hover behavior are handled by `artifacts/portfolio/src/components/footer/index.tsx`. On desktop it renders as 3D text "EMAIL ME" with the same letter-spacing hover animation as the other links; on mobile it renders as the envelope SVG.
+- The footer click handler navigates `mailto:` URLs via `window.location.href` (instead of `window.open`) so they reliably open the visitor's default email app. No backend or third-party email service is involved.
 
 ## Key Commands
 
