@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 import { usePortalStore, useScrollStore } from "@stores";
+import TiltGroup from "./TiltGroup";
 
 const ScrollWrapper = (props: { children: React.ReactNode | React.ReactNode[]}) => {
   const { camera, size } = useThree();
@@ -36,13 +37,13 @@ const ScrollWrapper = (props: { children: React.ReactNode | React.ReactNode[]}) 
 
   const children = Array.isArray(props.children) ? props.children : [props.children];
 
-  return <>
+  return <TiltGroup>
     {children.map((child, index) => {
       return <group key={index}>
         {child}
       </group>
     })}
-  </>
+  </TiltGroup>
 }
 
 export default ScrollWrapper;
