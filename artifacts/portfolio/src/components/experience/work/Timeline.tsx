@@ -43,9 +43,9 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelWidth = 3.6;
   const panelHeight = hasDescription ? 3.9 : 2.7;
   const panelCenterY = hasDescription ? -1.55 : -1.0;
-  const panelX = point.position === 'left'
+  const panelX = isMobile ? 0 : (point.position === 'left'
     ? -0.3 - panelWidth / 2
-    : 0.3 + panelWidth / 2;
+    : 0.3 + panelWidth / 2);
   const panelGroupY = isMobile ? 1.1 : 0;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
