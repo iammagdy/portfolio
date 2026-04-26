@@ -53,10 +53,7 @@ const Work = () => {
         <shadowMaterial opacity={0.1} />
       </mesh>
       <ScrollControls style={{ zIndex: -1}} pages={5} maxSpeed={0.25}>
-        <Memory
-          scale={isMobile ? new THREE.Vector3(2.0, 2.0, 2.0) : new THREE.Vector3(5, 5, 5)}
-          position={isMobile ? new THREE.Vector3(0, -2, -1) : new THREE.Vector3(0, -6, 1)}
-        />
+        <Memory scale={new THREE.Vector3(5, 5, 5)} position={new THREE.Vector3(0, -6, 1)}/>
         <Timeline progress={isActive ? scrollProgress : 0} />
       </ScrollControls>
     </group>
