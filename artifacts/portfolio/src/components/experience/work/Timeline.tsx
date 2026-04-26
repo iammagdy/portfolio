@@ -8,28 +8,17 @@ import * as THREE from "three";
 import { WORK_TIMELINE } from "@constants";
 import { WorkTimelinePoint } from "@types";
 
-const reusableLeft = new THREE.Vector3(-0.3, 0, -0.1);
-const reusableRight = new THREE.Vector3(0.3, 0, -0.1);
-
 const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
   const { size } = useThree();
   const isMobile = size.width < 768;
-  const getPoint = useMemo(() => {
-    switch (point.position) {
-      case 'left': return reusableLeft;
-      case 'right': return reusableRight;
-      default: return new THREE.Vector3();
-    }
-  }, [point.position]);
-
-  const textAlign = point.position === 'left' ? 'right' : 'left';
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
     color: "white",
-    anchorX: textAlign,
+    anchorX: "center" as const,
+    textAlign: "center" as const,
     fillOpacity: 2 - 2 * diff,
-  }), [textAlign, diff]);
+  }), [diff]);
 
   const titleProps = useMemo(() => ({
     ...textProps,
@@ -53,8 +42,8 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
         <meshBasicMaterial color="white" wireframe />
         <Edges color="white" lineWidth={1.5} />
       </Box>
-      <group>
-        <mesh position={[panelX, panelCenterY, -0.15]}>
+      <group position={[panelX, 0, 0]}>
+        <mesh position={[0, panelCenterY, -0.15]}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
             color="#0a0a18"
@@ -63,19 +52,15 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
             depthWrite={false}
           />
         </mesh>
-        <group position={getPoint}>
-          <Text {...textProps} fontSize={0.3} position={[-diff / 2, 0, 0]}>
-            {point.year}
-          </Text>
-          <group position={[0, -0.8, 0]}>
-            <Text {...titleProps} position={[0, -diff / 2, 0]}>
-              {point.title}
-            </Text>
-            <Text {...textProps} fontSize={0.2} maxWidth={3.2} position={[0, -1.5 - diff, 0]}>
-              {point.subtitle}
-            </Text>
-          </group>
-        </group>
+        <Text {...textProps} fontSize={0.3} position={[0, 0.05, 0]}>
+          {point.year}
+        </Text>
+        <Text {...titleProps} position={[0, -0.85 - diff / 2, 0]}>
+          {point.title}
+        </Text>
+        <Text {...textProps} fontSize={0.2} maxWidth={3.2} position={[0, -2.05 - diff * 0.1, 0]}>
+          {point.subtitle}
+        </Text>
       </group>
     </group>
   );
