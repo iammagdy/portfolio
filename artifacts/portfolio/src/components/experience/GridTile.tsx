@@ -34,15 +34,15 @@ const GridTile = (props: GridTileProps) => {
     if (isMobile && titleRef.current) {
       const isWork = id === 'work';
       gsap.to(titleRef.current, {
-        fontSize: 0.12,
+        fontSize: 0.18,
         maxWidth: 2.2,
         color: '#FFF',
-        letterSpacing: 0.1,
+        letterSpacing: 0.05,
         textAlign: 'center',
       });
       gsap.to(titleRef.current.position, {
         x: 0,
-        y: -0.95,
+        y: isWork ? -0.92 : 0.92,
         duration: 0.5,
       });
     }
