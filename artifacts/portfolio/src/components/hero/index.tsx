@@ -7,6 +7,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useThemeStore } from "../../stores/themeStore";
 import CloudContainer, { CLOUD_BOUNDS } from "../models/Cloud";
 import StarsContainer from "../models/Stars";
 import WindowModel from "../models/WindowModel";
@@ -21,6 +22,8 @@ const Hero = () => {
   const { progress } = useProgress();
   const { camera, size } = useThree();
   const isMobile = size.width < 768;
+  const themeType = useThemeStore((state) => state.theme.type);
+  const isLight = themeType === "light";
 
   const tmpVec = useMemo(() => new THREE.Vector3(), []);
   const tmpVec2 = useMemo(() => new THREE.Vector3(), []);
@@ -38,7 +41,15 @@ const Hero = () => {
     }
   }, [progress]);
 
+  useEffect(() => {
+    if (isLight && isOverlapRef.current) {
+      isOverlapRef.current = false;
+      setOutlineColor("#ffffff");
+    }
+  }, [isLight]);
+
   useFrame(() => {
+    if (isLight) return;
     const text = titleRef.current;
     if (!text || !text.textRenderInfo) return;
     const blockBounds = text.textRenderInfo.blockBounds;
@@ -99,9 +110,10 @@ const Hero = () => {
   const fontProps = {
     font: "./soria-font.ttf",
     fontSize: isMobile ? 0.7 : 1.2,
-    outlineWidth: "5%",
+    color: isLight ? "#000000" : "#ffffff",
+    outlineWidth: isLight ? 0 : "5%",
     outlineColor,
-    outlineOpacity: 1,
+    outlineOpacity: isLight ? 0 : 1,
   };
 
   return (
