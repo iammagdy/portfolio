@@ -5,7 +5,6 @@ import { usePortalStore } from '@stores';
 import gsap from "gsap";
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { TriangleGeometry } from './Triangle';
 
 interface GridTileProps {
   id: string;
@@ -35,14 +34,14 @@ const GridTile = (props: GridTileProps) => {
     if (isMobile && titleRef.current) {
       const isWork = id === 'work';
       gsap.to(titleRef.current, {
-        fontSize: 0.1,
-        maxWidth: 0.6,
-        color: isWork ? '#FFF' : '#888',
-        letterSpacing: 0.05,
+        fontSize: 0.12,
+        maxWidth: 1.8,
+        color: '#FFF',
+        letterSpacing: 0.08,
       });
       gsap.to(titleRef.current.position, {
-        x: isWork ? 0.4 : -0.4,
-        y: isWork ? -0.55 : 0.55,
+        x: 0,
+        y: -0.3,
         duration: 0.5,
       });
     }
@@ -166,13 +165,7 @@ const GridTile = (props: GridTileProps) => {
     if (!isMobile) {
       return <planeGeometry args={[4, 4, 1]} />
     }
-
-    const isWork = id === 'work';
-    const points = isWork ?
-      [[-0.375, 0.75, 0], [-0.375, -0.75, 0], [1.125, -0.75, 0]] :
-      [[-1.125, 0.75, 0], [0.375, -0.75, 0], [0.375, 0.75, 0]];
-
-    return <primitive object={TriangleGeometry({ points })} attach="geometry" />
+    return <planeGeometry args={[2.5, 1.5, 1]} />;
   };
 
   return (
