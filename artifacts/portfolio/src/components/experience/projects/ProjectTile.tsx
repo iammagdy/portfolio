@@ -32,8 +32,8 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
   }, [project.urls, project.url]);
 
   const buttonXPositions: number[] = useMemo(() => {
-    if (buttons.length <= 1) return [1.3];
-    return [0.05, 1.3];
+    if (buttons.length <= 1) return [0];
+    return [-0.7, 0.7];
   }, [buttons.length]);
 
   const titleProps = useMemo(() => ({
@@ -164,14 +164,14 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
             return (
               <group
                 key={`${i}-${button.text}`}
-                position={[x, -0.9, isDisabled ? 0 : -1]}
+                position={[x, -0.78, isDisabled ? 0 : -1]}
                 scale={[0, 0, 1]}
                 onClick={isDisabled ? handleDisabledClick : handleButtonClick(button)}
                 onPointerDown={isDisabled ? handleDisabledClick : undefined}
                 onPointerOver={isDisabled ? undefined : () => { document.body.style.cursor = 'pointer'; }}
                 onPointerOut={isDisabled ? undefined : () => { document.body.style.cursor = 'auto'; }}>
                 <mesh>
-                  <boxGeometry args={[1.1, 0.4, 0.2]} />
+                  <boxGeometry args={[1.2, 0.4, 0.2]} />
                   <meshBasicMaterial
                     color={isDisabled ? "#888" : "#222"}
                     transparent
@@ -181,10 +181,12 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
                 </mesh>
                 <Text
                   {...subtitleProps}
+                  anchorX="center"
+                  anchorY="middle"
                   color="white"
                   fillOpacity={isDisabled ? 0.7 : 1}
-                  position={[-0.5, 0.13, 0.2]}
-                  fontSize={isDisabled ? 0.18 : 0.25}>
+                  position={[0, 0, 0.2]}
+                  fontSize={isDisabled ? 0.15 : 0.22}>
                   {label}
                 </Text>
               </group>
