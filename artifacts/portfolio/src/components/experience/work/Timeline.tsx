@@ -183,30 +183,31 @@ const Timeline = ({ progress }: { progress: number }) => {
     i,
   }));
 
+  // On mobile we want the timeline path (solid + dashed line) to stay
+  // visible as a static decoration — never growing or shrinking with scroll.
+  const solidLinePoints = isMobile ? curvePoints : visibleCurvePoints;
+  const dashedLinePoints = isMobile ? curvePoints : visibleDashedCurvePoints;
+
   return (
     <group position={[0, -0.1, -0.1]}>
-      {!isMobile && (
-        <>
-          <Line
-            points={visibleCurvePoints}
-            color="white"
-            lineWidth={3}
-            depthTest={false}
-            renderOrder={9}
-          />
-          {visibleDashedCurvePoints.length > 0 && (
-            <Line
-              points={visibleDashedCurvePoints}
-              color="white"
-              lineWidth={0.5}
-              dashed
-              dashSize={0.25}
-              gapSize={0.25}
-              depthTest={false}
-              renderOrder={9}
-            />
-          )}
-        </>
+      <Line
+        points={solidLinePoints}
+        color="white"
+        lineWidth={3}
+        depthTest={false}
+        renderOrder={9}
+      />
+      {dashedLinePoints.length > 0 && (
+        <Line
+          points={dashedLinePoints}
+          color="white"
+          lineWidth={0.5}
+          dashed
+          dashSize={0.25}
+          gapSize={0.25}
+          depthTest={false}
+          renderOrder={9}
+        />
       )}
       <group ref={groupRef}>
         {renderedPoints.map(({ point, i }) => {
