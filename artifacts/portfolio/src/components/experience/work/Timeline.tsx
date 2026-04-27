@@ -188,8 +188,10 @@ const Timeline = ({ progress }: { progress: number }) => {
           const scaleMultiplier = isLastFour ? 0.75 : 1;
           // Push each of the last four panels progressively higher so their
           // black squares move up into the visible area of the screen.
+          // The increments shrink so the final panel doesn't fly off the top.
+          const lastFourLifts = [0.9, 1.3, 1.6, 1.8];
           const panelYOffset = isMobile && isLastFour
-            ? 1.2 + (i - lastFourStart) * 0.6
+            ? lastFourLifts[i - lastFourStart]
             : 0;
           return (
             <TimelinePoint
