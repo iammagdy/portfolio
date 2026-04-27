@@ -17,8 +17,7 @@ const onTextSync = (text: { material?: THREE.Material }) => {
 };
 
 const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
-  const { size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = window.innerWidth < 768;
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -43,17 +42,25 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelWidth = 3.6;
   const panelHeight = hasDescription ? 3.4 : 2.7;
   const panelCenterY = hasDescription ? -1.35 : -1.0;
-  const panelX = point.position === 'left'
-    ? -0.3 - panelWidth / 2
-    : 0.3 + panelWidth / 2;
+  const panelX = isMobile
+    ? 0
+    : (point.position === 'left' ? -0.3 - panelWidth / 2 : 0.3 + panelWidth / 2);
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
+
+  // On mobile we render every entry stacked at the same spot and only fade
+  // them in/out, so we keep all internal text positions fixed (no diff-based
+  // offsets that would cause perceived motion / zoom).
+  const titleY = isMobile ? -1.05 : -1.05 - diff / 2;
+  const subtitleY = isMobile ? -2.15 : -2.15 - diff * 0.1;
+  const descriptionY = isMobile ? -2.75 : -2.75 - diff * 0.1;
+  const boxScale = isMobile ? 1 : 1 - diff;
 
   return (
     <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
-        scale={[1 - diff, 1 - diff, 1 - diff]}
+        scale={[boxScale, boxScale, boxScale]}
         renderOrder={10}
       >
         <meshBasicMaterial color="white" wireframe depthTest={false} />
@@ -75,14 +82,14 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
         <Text {...textProps} fontSize={0.28} position={[0, -0.05, 0]}>
           {point.year}
         </Text>
-        <Text {...titleProps} position={[0, -1.05 - diff / 2, 0]}>
+        <Text {...titleProps} position={[0, titleY, 0]}>
           {point.title}
         </Text>
-        <Text {...textProps} fontSize={0.2} maxWidth={3.0} position={[0, -2.15 - diff * 0.1, 0]}>
+        <Text {...textProps} fontSize={0.2} maxWidth={3.0} position={[0, subtitleY, 0]}>
           {point.subtitle}
         </Text>
         {point.description && (
-          <Text {...textProps} fontSize={0.18} maxWidth={3.0} lineHeight={1.3} textAlign="center" position={[0, -2.75 - diff * 0.1, 0]}>
+          <Text {...textProps} fontSize={0.18} maxWidth={3.0} lineHeight={1.3} textAlign="center" position={[0, descriptionY, 0]}>
             {point.description}
           </Text>
         )}
@@ -92,8 +99,8 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
 };
 
 const Timeline = ({ progress }: { progress: number }) => {
-  const { camera, size } = useThree();
-  const isMobile = size.width < 768;
+  const { camera } = useThree();
+  const isMobile = window.innerWidth < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
   const timeline = useMemo(() => WORK_TIMELINE, []);
 
@@ -113,13 +120,16 @@ const Timeline = ({ progress }: { progress: number }) => {
 
   useFrame((_, delta) => {
     if (isActive) {
-      const position = curve.getPoint(progress);
       if (isMobile) {
-        // Constant offset from active entry so every title stays the same size while scrolling.
-        camera.position.x = THREE.MathUtils.damp(camera.position.x, position.x, 4, delta);
-        camera.position.y = THREE.MathUtils.damp(camera.position.y, position.y - 36, 4, delta);
-        camera.position.z = THREE.MathUtils.damp(camera.position.z, position.z + 13, 4, delta);
+        // Mobile: pin the camera completely. No tracking, no zoom, no shift.
+        camera.position.x = THREE.MathUtils.damp(camera.position.x, 0, 4, delta);
+        camera.position.y = THREE.MathUtils.damp(camera.position.y, 0, 4, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, 5, 4, delta);
+        camera.rotation.x = THREE.MathUtils.damp(camera.rotation.x, 0, 4, delta);
+        camera.rotation.y = THREE.MathUtils.damp(camera.rotation.y, 0, 4, delta);
+        camera.rotation.z = THREE.MathUtils.damp(camera.rotation.z, 0, 4, delta);
       } else {
+        const position = curve.getPoint(progress);
         camera.position.x = THREE.MathUtils.damp(camera.position.x, -2 + position.x, 4, delta);
         camera.position.y = THREE.MathUtils.damp(camera.position.y, -39 + position.z, 4, delta);
         camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
@@ -164,29 +174,42 @@ const Timeline = ({ progress }: { progress: number }) => {
     return () => clearInterval(intervalRef.current!);
   }, [isActive]);
 
+  // On mobile, every visible entry sits at the same fixed local position so
+  // nothing physically moves on the screen while the user scrolls; entries
+  // simply fade in / out via opacity.
+  const FIXED_MOBILE_POSITION = useMemo(() => new THREE.Vector3(0, 0, 0), []);
+  const renderedPoints = visibleTimelinePoints.map(({ point, i }) => ({
+    point: isMobile ? { ...point, point: FIXED_MOBILE_POSITION } : point,
+    i,
+  }));
+
   return (
     <group position={[0, -0.1, -0.1]}>
-      <Line
-        points={visibleCurvePoints}
-        color="white"
-        lineWidth={3}
-        depthTest={false}
-        renderOrder={9}
-      />
-      {visibleDashedCurvePoints.length > 0 && (
-        <Line
-          points={visibleDashedCurvePoints}
-          color="white"
-          lineWidth={0.5}
-          dashed
-          dashSize={0.25}
-          gapSize={0.25}
-          depthTest={false}
-          renderOrder={9}
-        />
+      {!isMobile && (
+        <>
+          <Line
+            points={visibleCurvePoints}
+            color="white"
+            lineWidth={3}
+            depthTest={false}
+            renderOrder={9}
+          />
+          {visibleDashedCurvePoints.length > 0 && (
+            <Line
+              points={visibleDashedCurvePoints}
+              color="white"
+              lineWidth={0.5}
+              dashed
+              dashSize={0.25}
+              gapSize={0.25}
+              depthTest={false}
+              renderOrder={9}
+            />
+          )}
+        </>
       )}
       <group ref={groupRef}>
-        {visibleTimelinePoints.map(({ point, i }) => {
+        {renderedPoints.map(({ point, i }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
           return <TimelinePoint point={point} key={i} diff={diff} />;
         })}
