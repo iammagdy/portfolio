@@ -73,6 +73,18 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
       return;
     }
 
+    // Guard: during the portal entrance animation the parent groupRef is
+    // tweened from scale 0 → 1 by GSAP. While the scale is near zero,
+    // outer.matrixWorld is nearly singular and its inverse blows up,
+    // sending inner.position to ±10⁶ and making panels fly off-screen.
+    // Fall back to the natural layout until the scale is large enough.
+    const e = outer.matrixWorld.elements;
+    const worldScale = Math.sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
+    if (worldScale < 0.05) {
+      inner.position.set(panelX, 0, 0);
+      return;
+    }
+
     // Compute the panel mesh's natural world position using the outer
     // group's already-up-to-date world matrix (set by R3F / drei portal each
     // frame). Natural placement = inner local (panelX, 0, 0) + panel mesh
