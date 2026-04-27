@@ -77,14 +77,14 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
         <Text {...textProps} fontSize={isMobile ? 0.30 : 0.28} position={[0, -0.05, 0]}>
           {point.year}
         </Text>
-        <Text {...titleProps} position={[0, -1.05 - diff / 2, 0]}>
+        <Text {...titleProps} position={[0, -1.05, 0]}>
           {point.title}
         </Text>
-        <Text {...textProps} fontSize={isMobile ? 0.23 : 0.2} maxWidth={isMobile ? 3.2 : 3.0} position={[0, -1.95 - diff * 0.1, 0]}>
+        <Text {...textProps} fontSize={isMobile ? 0.23 : 0.2} maxWidth={isMobile ? 3.2 : 3.0} position={[0, -1.95, 0]}>
           {point.subtitle}
         </Text>
         {point.description && (
-          <Text {...textProps} fontSize={isMobile ? 0.20 : 0.18} maxWidth={isMobile ? 3.2 : 3.0} lineHeight={1.4} textAlign="center" position={[0, -2.55 - diff * 0.1, 0]}>
+          <Text {...textProps} fontSize={isMobile ? 0.20 : 0.18} maxWidth={isMobile ? 3.2 : 3.0} lineHeight={1.4} textAlign="center" position={[0, -2.55, 0]}>
             {point.description}
           </Text>
         )}
@@ -117,31 +117,40 @@ const Timeline = ({ progress }: { progress: number }) => {
   const activeIndex = progress * (timeline.length - 1);
 
   const visibleTimelinePoints = useMemo(() => {
-    const windowRadius = isMobile ? 1.0 : 1.2;
+    const windowRadius = isMobile ? 1.2 : 1.2;
     return timeline
       .map((point, i) => ({ point, i }))
-      .filter(({ i }) => i <= activeIndex + 0.05 && Math.abs(i - activeIndex) <= windowRadius);
+      .filter(({ i }) => Math.abs(i - activeIndex) <= windowRadius);
   }, [timeline, activeIndex, isMobile]);
 
   const [visibleDashedCurvePoints, setVisibleDashedCurvePoints] = useState<THREE.Vector3[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const groupRef = useRef<THREE.Group>(null);
+  const mobileScrollGroupRef = useRef<THREE.Group>(null);
+
   useFrame((_, delta) => {
     if (isActive) {
-      const position = curve.getPoint(progress);
       if (isMobile) {
         camera.position.x = THREE.MathUtils.damp(camera.position.x, 0, 4, delta);
-        camera.position.y = THREE.MathUtils.damp(camera.position.y, position.y - 1.2, 4, delta);
-        camera.position.z = THREE.MathUtils.damp(camera.position.z, 5, 4, delta);
+        camera.position.y = THREE.MathUtils.damp(camera.position.y, 0, 4, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, 3.5, 4, delta);
+        if (mobileScrollGroupRef.current) {
+          mobileScrollGroupRef.current.position.y = THREE.MathUtils.damp(
+            mobileScrollGroupRef.current.position.y,
+            activeIndex * MOBILE_SPACING,
+            6,
+            delta
+          );
+        }
       } else {
+        const position = curve.getPoint(progress);
         camera.position.x = THREE.MathUtils.damp(camera.position.x, -2 + position.x, 4, delta);
         camera.position.y = THREE.MathUtils.damp(camera.position.y, -39 + position.z, 4, delta);
         camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
       }
     }
   });
-
-  const groupRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
     const tl = gsap.timeline();
@@ -158,6 +167,10 @@ const Timeline = ({ progress }: { progress: number }) => {
         duration: 1,
         delay: isActive ? 0.4 : 0,
       }, 0);
+    }
+
+    if (isMobile && mobileScrollGroupRef.current) {
+      mobileScrollGroupRef.current.position.y = 0;
     }
 
     if (isActive) {
@@ -182,6 +195,28 @@ const Timeline = ({ progress }: { progress: number }) => {
     point: isMobile ? { ...point, point: mobileCurvePoints[i] } : point,
     i,
   }));
+
+  if (isMobile) {
+    return (
+      <group position={[0, -0.1, -0.1]}>
+        <group ref={groupRef}>
+          <group ref={mobileScrollGroupRef}>
+            <Line
+              points={visibleCurvePoints}
+              color="white"
+              lineWidth={3}
+              depthTest={false}
+              renderOrder={9}
+            />
+            {effectivePoints.map(({ point, i }) => {
+              const diff = Math.min(Math.abs(i - activeIndex), 1);
+              return <TimelinePoint point={point} key={i} diff={diff} />;
+            })}
+          </group>
+        </group>
+      </group>
+    );
+  }
 
   return (
     <group position={[0, -0.1, -0.1]}>
