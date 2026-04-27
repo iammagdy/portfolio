@@ -17,16 +17,8 @@ const onTextSync = (text: { material?: THREE.Material }) => {
 };
 
 const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
-  const { camera, size } = useThree();
+  const { size } = useThree();
   const isMobile = size.width < 768;
-  const outerGroupRef = useRef<THREE.Group>(null);
-  const innerGroupRef = useRef<THREE.Group>(null);
-
-  const tmpUp = useMemo(() => new THREE.Vector3(), []);
-  const tmpDelta = useMemo(() => new THREE.Vector3(), []);
-  const tmpPanelWorld = useMemo(() => new THREE.Vector3(), []);
-  const tmpLocalA = useMemo(() => new THREE.Vector3(), []);
-  const tmpLocalB = useMemo(() => new THREE.Vector3(), []);
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -55,67 +47,9 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
-  const outerScale = isMobile ? 0.55 : 0.6;
-
-  // On mobile, slide every panel along the camera's world-up axis so each
-  // one lands at the screen's vertical centre. The panel keeps its natural
-  // depth (preserving the fly-through visual scale) and orientation
-  // (preserving readability). The wireframe Box marker stays on the curve,
-  // so the dashed line and fly-through effect are unchanged. Desktop keeps
-  // the original side-aligned layout.
-  useFrame(() => {
-    const inner = innerGroupRef.current;
-    const outer = outerGroupRef.current;
-    if (!inner || !outer) return;
-
-    if (!isMobile) {
-      inner.position.set(panelX, 0, 0);
-      return;
-    }
-
-    // Guard: during the portal entrance animation the parent groupRef is
-    // tweened from scale 0 → 1 by GSAP. While the scale is near zero,
-    // outer.matrixWorld is nearly singular and its inverse blows up,
-    // sending inner.position to ±10⁶ and making panels fly off-screen.
-    // Fall back to the natural layout until the scale is large enough.
-    const e = outer.matrixWorld.elements;
-    const worldScale = Math.sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
-    if (worldScale < 0.05) {
-      inner.position.set(panelX, 0, 0);
-      return;
-    }
-
-    // Compute the panel mesh's natural world position using the outer
-    // group's already-up-to-date world matrix (set by R3F / drei portal each
-    // frame). Natural placement = inner local (panelX, 0, 0) + panel mesh
-    // local offset (0, panelCenterY, -0.15) inside outer's child frame.
-    tmpPanelWorld.set(panelX, panelCenterY, -0.15);
-    outer.localToWorld(tmpPanelWorld);
-
-    // Camera's world-up direction.
-    tmpUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
-
-    // Project the camera→panel vector onto camera up: this is the panel's
-    // vertical offset from the screen's horizontal centre line. Subtract it
-    // along camera up to cancel the offset, leaving the panel at the
-    // camera's vertical centre.
-    // Invariant: dot((panelWorld - cameraPos), cameraUp) === 0
-    // means the panel sits on the screen's vertical centre line.
-    tmpDelta.copy(tmpPanelWorld).sub(camera.position);
-    const upComp = tmpDelta.dot(tmpUp);
-    tmpPanelWorld.addScaledVector(tmpUp, -upComp);
-
-    // Convert the corrected world target back into outer's local child
-    // frame, then strip the panel-mesh local offset so the inner group's
-    // position causes the panel mesh to land exactly on the target.
-    tmpLocalA.copy(tmpPanelWorld);
-    outer.worldToLocal(tmpLocalA);
-    tmpLocalB.set(0, panelCenterY, -0.15);
-    inner.position.copy(tmpLocalA).sub(tmpLocalB);
-  });
 
   return (
-    <group ref={outerGroupRef} position={point.point} scale={outerScale}>
+    <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
@@ -127,7 +61,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
           <lineBasicMaterial color="white" depthTest={false} />
         </Edges>
       </Box>
-      <group ref={innerGroupRef} position={[panelX, 0, 0]}>
+      <group position={[panelX, 0, 0]}>
         <mesh position={[0, panelCenterY, -0.15]} renderOrder={11}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
