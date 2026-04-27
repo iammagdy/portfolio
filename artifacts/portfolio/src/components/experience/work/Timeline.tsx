@@ -95,7 +95,23 @@ const Timeline = ({ progress }: { progress: number }) => {
   const { camera, size } = useThree();
   const isMobile = size.width < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
-  const timeline = useMemo(() => WORK_TIMELINE, []);
+  const timeline = useMemo(() => {
+    if (!isMobile) return WORK_TIMELINE;
+    // On mobile, gently lift the last 4 entries so the dashed line curves
+    // upward into the centre of the screen and their panels stay in view
+    // instead of sliding off the bottom.
+    const liftCount = 4;
+    const startLiftIndex = WORK_TIMELINE.length - liftCount;
+    return WORK_TIMELINE.map((p, i) => {
+      if (i < startLiftIndex) return p;
+      const offset = i - startLiftIndex; // 0, 1, 2, 3
+      const yLift = 0.5 + offset * 0.55; // 0.5, 1.05, 1.6, 2.15
+      return {
+        ...p,
+        point: new THREE.Vector3(p.point.x, p.point.y + yLift, p.point.z),
+      };
+    });
+  }, [isMobile]);
 
   const curve = useMemo(() => new THREE.CatmullRomCurve3(timeline.map(p => p.point), false), [timeline]);
   const curvePoints = useMemo(() => curve.getPoints(500), [curve]);
