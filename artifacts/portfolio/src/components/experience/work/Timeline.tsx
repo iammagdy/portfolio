@@ -16,7 +16,7 @@ const onTextSync = (text: { material?: THREE.Material }) => {
   }
 };
 
-const TimelinePoint = ({ point, diff, scaleMultiplier = 1 }: { point: WorkTimelinePoint, diff: number, scaleMultiplier?: number }) => {
+const TimelinePoint = ({ point, diff, scaleMultiplier = 1, panelYOffset = 0 }: { point: WorkTimelinePoint, diff: number, scaleMultiplier?: number, panelYOffset?: number }) => {
   const { size } = useThree();
   const isMobile = size.width < 768;
 
@@ -61,7 +61,7 @@ const TimelinePoint = ({ point, diff, scaleMultiplier = 1 }: { point: WorkTimeli
           <lineBasicMaterial color="white" depthTest={false} />
         </Edges>
       </Box>
-      <group position={[panelX, 0, 0]}>
+      <group position={[panelX, panelYOffset, 0]}>
         <mesh position={[0, panelCenterY, -0.15]} renderOrder={11}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
@@ -95,23 +95,7 @@ const Timeline = ({ progress }: { progress: number }) => {
   const { camera, size } = useThree();
   const isMobile = size.width < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
-  const timeline = useMemo(() => {
-    if (!isMobile) return WORK_TIMELINE;
-    // On mobile, gently lift the last 4 entries so the dashed line curves
-    // upward into the centre of the screen and their panels stay in view
-    // instead of sliding off the bottom.
-    const liftCount = 4;
-    const startLiftIndex = WORK_TIMELINE.length - liftCount;
-    return WORK_TIMELINE.map((p, i) => {
-      if (i < startLiftIndex) return p;
-      const offset = i - startLiftIndex; // 0, 1, 2, 3
-      const yLift = 0.5 + offset * 0.55; // 0.5, 1.05, 1.6, 2.15
-      return {
-        ...p,
-        point: new THREE.Vector3(p.point.x, p.point.y + yLift, p.point.z),
-      };
-    });
-  }, [isMobile]);
+  const timeline = useMemo(() => WORK_TIMELINE, []);
 
   const curve = useMemo(() => new THREE.CatmullRomCurve3(timeline.map(p => p.point), false), [timeline]);
   const curvePoints = useMemo(() => curve.getPoints(500), [curve]);
@@ -197,10 +181,25 @@ const Timeline = ({ progress }: { progress: number }) => {
       <group ref={groupRef}>
         {visibleTimelinePoints.map(({ point, i }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
-          // Shrink the last 4 entries so their panels fit on the screen.
-          const isLastFour = i >= timeline.length - 4;
+          // Shrink the last 4 entries' panels and shift them upward so they
+          // stay on screen instead of sliding off the bottom on mobile.
+          const lastFourStart = timeline.length - 4;
+          const isLastFour = i >= lastFourStart;
           const scaleMultiplier = isLastFour ? 0.75 : 1;
-          return <TimelinePoint point={point} key={i} diff={diff} scaleMultiplier={scaleMultiplier} />;
+          // Push each of the last four panels progressively higher so their
+          // black squares move up into the visible area of the screen.
+          const panelYOffset = isMobile && isLastFour
+            ? 1.2 + (i - lastFourStart) * 0.6
+            : 0;
+          return (
+            <TimelinePoint
+              point={point}
+              key={i}
+              diff={diff}
+              scaleMultiplier={scaleMultiplier}
+              panelYOffset={panelYOffset}
+            />
+          );
         })}
       </group>
     </group>
