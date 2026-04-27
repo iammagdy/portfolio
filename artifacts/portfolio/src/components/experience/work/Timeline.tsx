@@ -19,8 +19,7 @@ const onTextSync = (text: { material?: THREE.Material }) => {
 };
 
 const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
-  const { size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = window.innerWidth < 768;
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -95,8 +94,8 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
 };
 
 const Timeline = ({ progress }: { progress: number }) => {
-  const { camera, size } = useThree();
-  const isMobile = size.width < 768;
+  const { camera } = useThree();
+  const isMobile = window.innerWidth < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
   const timeline = useMemo(() => WORK_TIMELINE, []);
 
