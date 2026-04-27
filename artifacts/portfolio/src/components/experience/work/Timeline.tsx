@@ -25,6 +25,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const innerGroupRef = useRef<THREE.Group>(null);
 
   const tmpForward = useMemo(() => new THREE.Vector3(), []);
+  const tmpRight = useMemo(() => new THREE.Vector3(), []);
   const tmpTarget = useMemo(() => new THREE.Vector3(), []);
   const tmpInverse = useMemo(() => new THREE.Matrix4(), []);
   const panelMeshLocalOffset = useMemo(() => new THREE.Vector3(), []);
@@ -74,9 +75,15 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     }
 
     // Target world position: a fixed distance in front of the camera along
-    // its look direction (the screen-centre ray).
+    // its look direction (the screen-centre ray), plus the existing
+    // left/right side displacement along the camera's right axis so each
+    // entry stays in its assigned lane on screen.
     camera.getWorldDirection(tmpForward);
-    tmpTarget.copy(camera.position).addScaledVector(tmpForward, MOBILE_PANEL_DEPTH);
+    tmpRight.set(1, 0, 0).applyQuaternion(camera.quaternion);
+    tmpTarget
+      .copy(camera.position)
+      .addScaledVector(tmpForward, MOBILE_PANEL_DEPTH)
+      .addScaledVector(tmpRight, panelX * outerScale);
 
     // Convert that world target into the outer group's child coordinate
     // space using its full world matrix (which encodes every parent
