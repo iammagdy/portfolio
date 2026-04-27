@@ -16,7 +16,7 @@ const onTextSync = (text: { material?: THREE.Material }) => {
   }
 };
 
-const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
+const TimelinePoint = ({ point, diff, scaleMultiplier = 1 }: { point: WorkTimelinePoint, diff: number, scaleMultiplier?: number }) => {
   const { size } = useThree();
   const isMobile = size.width < 768;
 
@@ -49,7 +49,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
   return (
-    <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
+    <group position={point.point} scale={(isMobile ? 0.55 : 0.6) * scaleMultiplier}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
@@ -181,7 +181,10 @@ const Timeline = ({ progress }: { progress: number }) => {
       <group ref={groupRef}>
         {visibleTimelinePoints.map(({ point, i }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
-          return <TimelinePoint point={point} key={i} diff={diff} />;
+          // Shrink the last 4 entries so their panels fit on the screen.
+          const isLastFour = i >= timeline.length - 4;
+          const scaleMultiplier = isLastFour ? 0.75 : 1;
+          return <TimelinePoint point={point} key={i} diff={diff} scaleMultiplier={scaleMultiplier} />;
         })}
       </group>
     </group>
