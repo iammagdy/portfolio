@@ -121,13 +121,13 @@ const Timeline = ({ progress }: { progress: number }) => {
   useFrame((_, delta) => {
     if (isActive) {
       if (isMobile) {
-        // Mobile: pin the camera completely. No tracking, no zoom, no shift.
+        // Mobile: pin the camera to the same spot the original code used for
+        // the very first entry (progress = 0 → curve point at origin), so the
+        // view that worked before is preserved, but it never moves while the
+        // user scrolls. Rotation is intentionally left untouched.
         camera.position.x = THREE.MathUtils.damp(camera.position.x, 0, 4, delta);
-        camera.position.y = THREE.MathUtils.damp(camera.position.y, 0, 4, delta);
-        camera.position.z = THREE.MathUtils.damp(camera.position.z, 5, 4, delta);
-        camera.rotation.x = THREE.MathUtils.damp(camera.rotation.x, 0, 4, delta);
-        camera.rotation.y = THREE.MathUtils.damp(camera.rotation.y, 0, 4, delta);
-        camera.rotation.z = THREE.MathUtils.damp(camera.rotation.z, 0, 4, delta);
+        camera.position.y = THREE.MathUtils.damp(camera.position.y, -36, 4, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, 13, 4, delta);
       } else {
         const position = curve.getPoint(progress);
         camera.position.x = THREE.MathUtils.damp(camera.position.x, -2 + position.x, 4, delta);
