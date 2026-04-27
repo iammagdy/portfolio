@@ -8,8 +8,6 @@ import * as THREE from "three";
 import { WORK_TIMELINE } from "@constants";
 import { WorkTimelinePoint } from "@types";
 
-const MOBILE_SPACING = 2.8;
-
 const onTextSync = (text: { material?: THREE.Material }) => {
   if (text.material) {
     text.material.depthTest = false;
@@ -19,7 +17,8 @@ const onTextSync = (text: { material?: THREE.Material }) => {
 };
 
 const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
-  const isMobile = window.innerWidth < 768;
+  const { size } = useThree();
+  const isMobile = size.width < 768;
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -34,24 +33,23 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
   const titleProps = useMemo(() => ({
     ...textProps,
     font: "./soria-font.ttf",
-    fontSize: isMobile ? 0.38 : 0.34,
-    maxWidth: isMobile ? 3.2 : 3.0,
+    fontSize: 0.34,
+    maxWidth: 3.0,
     lineHeight: 1.15,
     overflowWrap: 'break-word' as const,
-  }), [textProps, isMobile]);
+  }), [textProps]);
 
   const hasDescription = !!point.description;
-  const panelWidth = isMobile ? 3.4 : 3.6;
-  const panelHeight = hasDescription ? (isMobile ? 3.5 : 3.9) : (isMobile ? 2.5 : 2.7);
-  const panelCenterY = hasDescription ? (isMobile ? -1.35 : -1.55) : (isMobile ? -0.9 : -1.0);
-  const panelX = isMobile ? 0 : (point.position === 'left'
+  const panelWidth = 3.6;
+  const panelHeight = hasDescription ? 3.4 : 2.7;
+  const panelCenterY = hasDescription ? -1.35 : -1.0;
+  const panelX = point.position === 'left'
     ? -0.3 - panelWidth / 2
-    : 0.3 + panelWidth / 2);
-  const panelGroupY = isMobile ? 0.2 : 0;
+    : 0.3 + panelWidth / 2;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
 
   return (
-    <group position={point.point} scale={isMobile ? 0.75 : 0.6}>
+    <group position={point.point} scale={isMobile ? 0.55 : 0.6}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
@@ -63,7 +61,7 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
           <lineBasicMaterial color="white" depthTest={false} />
         </Edges>
       </Box>
-      <group position={[panelX, panelGroupY, 0]}>
+      <group position={[panelX, 0, 0]}>
         <mesh position={[0, panelCenterY, -0.15]} renderOrder={11}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
@@ -74,17 +72,17 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
             depthTest={false}
           />
         </mesh>
-        <Text {...textProps} fontSize={isMobile ? 0.30 : 0.28} position={[0, -0.05, 0]}>
+        <Text {...textProps} fontSize={0.28} position={[0, -0.05, 0]}>
           {point.year}
         </Text>
         <Text {...titleProps} position={[0, -1.05 - diff / 2, 0]}>
           {point.title}
         </Text>
-        <Text {...textProps} fontSize={isMobile ? 0.23 : 0.2} maxWidth={isMobile ? 3.2 : 3.0} position={[0, -1.95 - diff * 0.1, 0]}>
+        <Text {...textProps} fontSize={0.2} maxWidth={3.0} position={[0, -2.15 - diff * 0.1, 0]}>
           {point.subtitle}
         </Text>
         {point.description && (
-          <Text {...textProps} fontSize={isMobile ? 0.20 : 0.18} maxWidth={isMobile ? 3.2 : 3.0} lineHeight={1.4} textAlign="center" position={[0, -2.55 - diff * 0.1, 0]}>
+          <Text {...textProps} fontSize={0.18} maxWidth={3.0} lineHeight={1.3} textAlign="center" position={[0, -2.75 - diff * 0.1, 0]}>
             {point.description}
           </Text>
         )}
@@ -94,34 +92,21 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
 };
 
 const Timeline = ({ progress }: { progress: number }) => {
-  const { camera } = useThree();
-  const isMobile = window.innerWidth < 768;
+  const { camera, size } = useThree();
+  const isMobile = size.width < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
   const timeline = useMemo(() => WORK_TIMELINE, []);
 
-  const mobileCurvePoints = useMemo(
-    () => timeline.map((_, i) => new THREE.Vector3(0, -i * MOBILE_SPACING, 0)),
-    [timeline]
-  );
-
-  const curve = useMemo(
-    () => new THREE.CatmullRomCurve3(
-      isMobile ? mobileCurvePoints : timeline.map(p => p.point),
-      false
-    ),
-    [timeline, isMobile, mobileCurvePoints]
-  );
-
+  const curve = useMemo(() => new THREE.CatmullRomCurve3(timeline.map(p => p.point), false), [timeline]);
   const curvePoints = useMemo(() => curve.getPoints(500), [curve]);
   const visibleCurvePoints = useMemo(() => curvePoints.slice(0, Math.max(1, Math.ceil(progress * curvePoints.length))), [curvePoints, progress]);
   const activeIndex = progress * (timeline.length - 1);
-
   const visibleTimelinePoints = useMemo(() => {
-    const windowRadius = isMobile ? 1.0 : 1.2;
+    const windowRadius = 1.2;
     return timeline
       .map((point, i) => ({ point, i }))
       .filter(({ i }) => i <= activeIndex + 0.05 && Math.abs(i - activeIndex) <= windowRadius);
-  }, [timeline, activeIndex, isMobile]);
+  }, [timeline, activeIndex]);
 
   const [visibleDashedCurvePoints, setVisibleDashedCurvePoints] = useState<THREE.Vector3[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -129,15 +114,9 @@ const Timeline = ({ progress }: { progress: number }) => {
   useFrame((_, delta) => {
     if (isActive) {
       const position = curve.getPoint(progress);
-      if (isMobile) {
-        camera.position.x = THREE.MathUtils.damp(camera.position.x, 0, 4, delta);
-        camera.position.y = THREE.MathUtils.damp(camera.position.y, position.y - 1.2, 4, delta);
-        camera.position.z = THREE.MathUtils.damp(camera.position.z, 5, 4, delta);
-      } else {
-        camera.position.x = THREE.MathUtils.damp(camera.position.x, -2 + position.x, 4, delta);
-        camera.position.y = THREE.MathUtils.damp(camera.position.y, -39 + position.z, 4, delta);
-        camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
-      }
+      camera.position.x = THREE.MathUtils.damp(camera.position.x, (isMobile ? 0 : -2) + position.x, 4, delta);
+      camera.position.y = THREE.MathUtils.damp(camera.position.y, (isMobile ? -36 : -39) + position.z, 4, delta);
+      camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
     }
   });
 
@@ -178,11 +157,6 @@ const Timeline = ({ progress }: { progress: number }) => {
     return () => clearInterval(intervalRef.current!);
   }, [isActive]);
 
-  const effectivePoints = visibleTimelinePoints.map(({ point, i }) => ({
-    point: isMobile ? { ...point, point: mobileCurvePoints[i] } : point,
-    i,
-  }));
-
   return (
     <group position={[0, -0.1, -0.1]}>
       <Line
@@ -205,7 +179,7 @@ const Timeline = ({ progress }: { progress: number }) => {
         />
       )}
       <group ref={groupRef}>
-        {effectivePoints.map(({ point, i }) => {
+        {visibleTimelinePoints.map(({ point, i }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
           return <TimelinePoint point={point} key={i} diff={diff} />;
         })}

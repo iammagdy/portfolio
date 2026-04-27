@@ -1,4 +1,5 @@
 import { ScrollControls, useTexture } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { usePortalStore, useScrollStore } from "@stores";
 import { useEffect } from "react";
 import * as THREE from "three";
@@ -16,7 +17,8 @@ const MemoryTile = () => {
 };
 
 const Work = () => {
-  const isMobile = window.innerWidth < 768;
+  const { size } = useThree();
+  const isMobile = size.width < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
   const { scrollProgress, setScrollProgress } = useScrollStore();
 
