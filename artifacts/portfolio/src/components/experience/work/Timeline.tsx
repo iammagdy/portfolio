@@ -114,9 +114,16 @@ const Timeline = ({ progress }: { progress: number }) => {
   useFrame((_, delta) => {
     if (isActive) {
       const position = curve.getPoint(progress);
-      camera.position.x = THREE.MathUtils.damp(camera.position.x, (isMobile ? 0 : -2) + position.x, 4, delta);
-      camera.position.y = THREE.MathUtils.damp(camera.position.y, (isMobile ? -36 : -39) + position.z, 4, delta);
-      camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
+      if (isMobile) {
+        // Constant offset from active entry so every title stays the same size while scrolling.
+        camera.position.x = THREE.MathUtils.damp(camera.position.x, position.x, 4, delta);
+        camera.position.y = THREE.MathUtils.damp(camera.position.y, position.y - 36, 4, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, position.z + 13, 4, delta);
+      } else {
+        camera.position.x = THREE.MathUtils.damp(camera.position.x, -2 + position.x, 4, delta);
+        camera.position.y = THREE.MathUtils.damp(camera.position.y, -39 + position.z, 4, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, 13 - position.y, 4, delta);
+      }
     }
   });
 
