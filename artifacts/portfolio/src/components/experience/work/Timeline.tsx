@@ -134,7 +134,7 @@ const Timeline = ({ progress }: { progress: number }) => {
       if (isMobile) {
         camera.position.x = THREE.MathUtils.damp(camera.position.x, 0, 4, delta);
         camera.position.y = THREE.MathUtils.damp(camera.position.y, 0, 4, delta);
-        camera.position.z = THREE.MathUtils.damp(camera.position.z, 3.5, 4, delta);
+        camera.position.z = THREE.MathUtils.damp(camera.position.z, 2.0, 4, delta);
         if (mobileScrollGroupRef.current) {
           mobileScrollGroupRef.current.position.y = THREE.MathUtils.damp(
             mobileScrollGroupRef.current.position.y,
