@@ -16,9 +16,18 @@ const onTextSync = (text: { material?: THREE.Material }) => {
   }
 };
 
-const TimelinePoint = ({ point, diff, scaleMultiplier = 1, panelYOffset = 0 }: { point: WorkTimelinePoint, diff: number, scaleMultiplier?: number, panelYOffset?: number }) => {
-  const { size } = useThree();
+const MOBILE_PANEL_DEPTH = 36;
+
+const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number }) => {
+  const { camera, size } = useThree();
   const isMobile = size.width < 768;
+  const outerGroupRef = useRef<THREE.Group>(null);
+  const innerGroupRef = useRef<THREE.Group>(null);
+
+  const tmpForward = useMemo(() => new THREE.Vector3(), []);
+  const tmpTarget = useMemo(() => new THREE.Vector3(), []);
+  const tmpInverse = useMemo(() => new THREE.Matrix4(), []);
+  const panelMeshLocalOffset = useMemo(() => new THREE.Vector3(), []);
 
   const textProps: Partial<TextProps> = useMemo(() => ({
     font: "./Vercetti-Regular.woff",
@@ -47,9 +56,44 @@ const TimelinePoint = ({ point, diff, scaleMultiplier = 1, panelYOffset = 0 }: {
     ? -0.3 - panelWidth / 2
     : 0.3 + panelWidth / 2;
   const panelOpacity = Math.min(1, Math.max(0, 2 - 2 * diff)) * 0.85;
+  const outerScale = isMobile ? 0.55 : 0.6;
+
+  // On mobile, anchor every panel to a point directly in front of the camera
+  // each frame so the title squares always land in the middle of the screen,
+  // regardless of where the underlying curve point sits. The wireframe Box
+  // marker stays on the curve, so the dashed line and fly-through effect are
+  // unchanged. On desktop the original side-aligned layout is preserved.
+  useFrame(() => {
+    const inner = innerGroupRef.current;
+    const outer = outerGroupRef.current;
+    if (!inner || !outer) return;
+
+    if (!isMobile) {
+      inner.position.set(panelX, 0, 0);
+      return;
+    }
+
+    // Target world position: a fixed distance in front of the camera along
+    // its look direction (the screen-centre ray).
+    camera.getWorldDirection(tmpForward);
+    tmpTarget.copy(camera.position).addScaledVector(tmpForward, MOBILE_PANEL_DEPTH);
+
+    // Convert that world target into the outer group's child coordinate
+    // space using its full world matrix (which encodes every parent
+    // rotation/translation/scale up through the Experience tree).
+    outer.updateWorldMatrix(true, false);
+    tmpInverse.copy(outer.matrixWorld).invert();
+    tmpTarget.applyMatrix4(tmpInverse);
+
+    // The panel mesh is at local offset (0, panelCenterY, -0.15) inside
+    // the inner group. Position the inner group so the panel mesh's centre
+    // lands on the target.
+    panelMeshLocalOffset.set(0, panelCenterY, -0.15);
+    inner.position.copy(tmpTarget).sub(panelMeshLocalOffset);
+  });
 
   return (
-    <group position={point.point} scale={(isMobile ? 0.55 : 0.6) * scaleMultiplier}>
+    <group ref={outerGroupRef} position={point.point} scale={outerScale}>
       <Box
         args={[0.2, 0.2, 0.2]}
         position={[0, 0, -0.1]}
@@ -61,7 +105,7 @@ const TimelinePoint = ({ point, diff, scaleMultiplier = 1, panelYOffset = 0 }: {
           <lineBasicMaterial color="white" depthTest={false} />
         </Edges>
       </Box>
-      <group position={[panelX, panelYOffset, 0]}>
+      <group ref={innerGroupRef} position={[panelX, 0, 0]}>
         <mesh position={[0, panelCenterY, -0.15]} renderOrder={11}>
           <planeGeometry args={[panelWidth, panelHeight]} />
           <meshBasicMaterial
@@ -181,27 +225,7 @@ const Timeline = ({ progress }: { progress: number }) => {
       <group ref={groupRef}>
         {visibleTimelinePoints.map(({ point, i }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
-          // Shrink the last 4 entries' panels and shift them upward so they
-          // stay on screen instead of sliding off the bottom on mobile.
-          const lastFourStart = timeline.length - 4;
-          const isLastFour = i >= lastFourStart;
-          const scaleMultiplier = isLastFour ? 0.75 : 1;
-          // Push each of the last four panels progressively higher so their
-          // black squares move up into the visible area of the screen.
-          // The increments shrink so the final panel doesn't fly off the top.
-          const lastFourLifts = [0.9, 1.3, 2.3, 2.6];
-          const panelYOffset = isMobile && isLastFour
-            ? lastFourLifts[i - lastFourStart]
-            : 0;
-          return (
-            <TimelinePoint
-              point={point}
-              key={i}
-              diff={diff}
-              scaleMultiplier={scaleMultiplier}
-              panelYOffset={panelYOffset}
-            />
-          );
+          return <TimelinePoint point={point} key={i} diff={diff} />;
         })}
       </group>
     </group>
