@@ -174,14 +174,21 @@ const Timeline = ({ progress }: { progress: number }) => {
     return () => clearInterval(intervalRef.current!);
   }, [isActive]);
 
-  // On mobile, every visible entry sits at the same fixed local position so
-  // nothing physically moves on the screen while the user scrolls; entries
-  // simply fade in / out via opacity.
+  // On mobile, every entry sits at the same fixed local position. We pre-mount
+  // every entry (so fonts/text are ready) but only the one closest to the
+  // current scroll position is visible — no fade, no motion, just an instant
+  // swap as the user scrolls past each entry.
   const FIXED_MOBILE_POSITION = useMemo(() => new THREE.Vector3(0, 0, 0), []);
-  const renderedPoints = visibleTimelinePoints.map(({ point, i }) => ({
-    point: isMobile ? { ...point, point: FIXED_MOBILE_POSITION } : point,
-    i,
-  }));
+  const activeMobileIndex = Math.min(
+    timeline.length - 1,
+    Math.max(0, Math.round(activeIndex)),
+  );
+  const renderedPoints = isMobile
+    ? timeline.map((point, i) => ({
+        point: { ...point, point: FIXED_MOBILE_POSITION },
+        i,
+      }))
+    : visibleTimelinePoints;
 
   // On mobile we want the timeline path (solid + dashed line) to stay
   // visible as a static decoration — never growing or shrinking with scroll.
@@ -211,7 +218,9 @@ const Timeline = ({ progress }: { progress: number }) => {
       )}
       <group ref={groupRef}>
         {renderedPoints.map(({ point, i }) => {
-          const diff = Math.min(Math.abs(i - activeIndex), 1);
+          const diff = isMobile
+            ? (i === activeMobileIndex ? 0 : 1)
+            : Math.min(Math.abs(i - activeIndex), 1);
           return <TimelinePoint point={point} key={i} diff={diff} />;
         })}
       </group>
