@@ -1,41 +1,84 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from "react";
 import {
-  FlatList,
+  Dimensions,
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { useColors } from '@/hooks/useColors';
-import { PROJECTS } from '@/constants/data';
-import ProjectCard from './ProjectCard';
+} from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { useColors } from "@/hooks/useColors";
+import { useScrollCtx } from "@/hooks/useScrollContext";
+import { PROJECTS } from "@/constants/data";
+import ProjectCard from "./ProjectCard";
+
+const SCREEN_W = Dimensions.get("window").width;
 
 export default function ProjectsSection() {
   const colors = useColors();
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<Animated.FlatList<(typeof PROJECTS)[number]>>(null);
+  const [layoutY, setLayoutY] = useState(0);
+  const carouselX = useSharedValue(0);
+  const reveal = useSharedValue(0);
+  const { scrollY, viewportHeight } = useScrollCtx();
+
+  const onLayout = (e: LayoutChangeEvent) => setLayoutY(e.nativeEvent.layout.y);
+
+  useAnimatedReaction(
+    () => scrollY.value + viewportHeight.value * 0.75 > layoutY,
+    (entered, prev) => {
+      if (entered && !prev) reveal.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) });
+    },
+    [layoutY],
+  );
+
+  const labelStyle = useAnimatedStyle(() => ({
+    opacity: reveal.value,
+    transform: [{ translateX: (1 - reveal.value) * -40 }],
+  }));
+
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: reveal.value,
+    transform: [{ translateY: (1 - reveal.value) * 30 }],
+  }));
+
+  const onCarouselScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    carouselX.value = e.nativeEvent.contentOffset.x;
+  };
 
   return (
-    <View style={[styles.container, { borderTopColor: colors.border }]}>
-      <View style={styles.headerRow}>
-        <Text style={[styles.label, { color: colors.mutedForeground, fontFamily: 'Vercetti' }]}>SIDE PROJECTS</Text>
-        <Text style={[styles.count, { color: colors.mutedForeground, fontFamily: 'Vercetti' }]}>{PROJECTS.length}</Text>
-      </View>
+    <View style={[styles.container, { borderTopColor: colors.border }]} onLayout={onLayout}>
+      <Animated.View style={[styles.headerRow, labelStyle]}>
+        <Text style={[styles.label, { color: colors.mutedForeground, fontFamily: "Vercetti" }]}>SIDE PROJECTS</Text>
+        <Text style={[styles.count, { color: colors.mutedForeground, fontFamily: "Vercetti" }]}>{PROJECTS.length}</Text>
+      </Animated.View>
 
-      <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: 'Soria' }]}>
-        Things I've{'\n'}Built
-      </Text>
+      <Animated.Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: "Soria" }, titleStyle]}>
+        Things I've{"\n"}Built
+      </Animated.Text>
 
-      <FlatList
+      <Animated.FlatList
         ref={flatListRef}
         data={PROJECTS}
         keyExtractor={(item) => item.title}
         renderItem={({ item, index }) => (
-          <ProjectCard project={item} index={index} />
+          <ProjectCard project={item} index={index} carouselX={carouselX} screenWidth={SCREEN_W} />
         )}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.list}
         snapToAlignment="start"
         decelerationRate="fast"
+        onScroll={onCarouselScroll}
+        scrollEventThrottle={16}
         scrollEnabled={PROJECTS.length > 0}
       />
     </View>
@@ -50,9 +93,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 28,
   },
   label: {

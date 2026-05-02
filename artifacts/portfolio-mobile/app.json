@@ -2,7 +2,7 @@
   "expo": {
     "name": "Magdy Saber",
     "slug": "portfolio-mobile",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "portfolio-mobile",
@@ -11,14 +11,16 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0a0a0a"
+      "backgroundColor": "#111111"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "buildNumber": "2"
     },
     "android": {
-      "backgroundColor": "#0a0a0a",
-      "package": "com.magdysaber.portfolio"
+      "backgroundColor": "#111111",
+      "package": "com.magdysaber.portfolio",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/images/icon.png"

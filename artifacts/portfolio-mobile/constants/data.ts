@@ -1,3 +1,5 @@
+export const WEBSITE_URL = "https://magdysaber.com";
+
 export interface Project {
   title: string;
   date: string;
@@ -96,6 +98,7 @@ export const WORK_TIMELINE: WorkEntry[] = [
 ];
 
 export const CONTACT_LINKS: ContactLink[] = [
+  { name: 'Website', icon: 'globe', url: WEBSITE_URL },
   { name: 'LinkedIn', icon: 'linkedin', url: 'https://www.linkedin.com/in/magdy-saber' },
   { name: 'GitHub', icon: 'github', url: 'https://github.com/iammagdy' },
   { name: 'Email', icon: 'mail', url: 'mailto:contact@magdysaber.com?subject=Hello%20Magdy&body=Hi%20Magdy%2C%0A%0AI%20came%20across%20your%20portfolio%20and%20wanted%20to%20reach%20out%20about%20' },
