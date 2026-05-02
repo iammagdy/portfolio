@@ -28,23 +28,28 @@ const MobileProjectsOverlay = () => {
     if (!isActive) setActiveProject(null);
   }, [isActive]);
 
+  // Lock body scroll for the entire time the projects overlay is open so
+  // swipes inside the grid don't leak through to the page underneath.
+  useEffect(() => {
+    if (!isActive) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscroll = document.body.style.overscrollBehavior;
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "contain";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscroll;
+    };
+  }, [isActive]);
+
+  // Escape closes the project detail modal (keeps focus on the overlay).
   useEffect(() => {
     if (!activeProject) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setActiveProject(null);
     };
     window.addEventListener("keydown", onKey);
-
-    const previousOverflow = document.body.style.overflow;
-    const previousOverscroll = document.body.style.overscrollBehavior;
-    document.body.style.overflow = "hidden";
-    document.body.style.overscrollBehavior = "contain";
-
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
-      document.body.style.overscrollBehavior = previousOverscroll;
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [activeProject]);
 
   const projectsNewestFirst = useMemo(() => [...PROJECTS].reverse(), []);
