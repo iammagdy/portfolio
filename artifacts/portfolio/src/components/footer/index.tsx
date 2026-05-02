@@ -144,8 +144,8 @@ const Footer = () => {
   // attribute and the build artifacts for debugging.
   const shortVersion = __APP_VERSION__.replace(/\.0$/, '');
   const versionLabel = `v${shortVersion}`;
-  const versionFontSize = isMobile ? 0.16 : 0.18;
-  const versionOffsetY = isMobile ? -0.7 : -0.7;
+  const versionFontSize = isMobile ? 0.14 : 0.16;
+  const versionOffsetY = isMobile ? -0.4 : -0.4;
 
   return (
     <group position={[0, -44, 18]} rotation={[-Math.PI / 2, 0, 0]} ref={groupRef}>
