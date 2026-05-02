@@ -8,8 +8,27 @@
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <script type="module" crossorigin src="/assets/index-CUC2ZliA.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BJ9QzUm7.css">
+    <script>
+      (function () {
+        try {
+          var stored = null;
+          try { stored = JSON.parse(localStorage.getItem('theme-storage') || 'null'); } catch (e) {}
+          var saved = stored && stored.state ? stored.state : null;
+          var resolved;
+          if (saved && saved.userOverride && saved.theme && saved.theme.type) {
+            resolved = saved.theme.type;
+          } else {
+            var hour = new Date().getHours();
+            resolved = (hour < 6 || hour >= 18) ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', resolved);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DC9AUUko.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-SCx_Awph.css">
   </head>
   <body>
     <div id="root"></div>
