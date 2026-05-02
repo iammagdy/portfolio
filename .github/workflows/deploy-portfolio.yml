@@ -27,7 +27,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -50,7 +50,7 @@ jobs:
           NODE_ENV: 'production'
         run: pnpm --filter @workspace/portfolio run build
 
-      - name: Publish dist/public to dist branch
+      - name: Publish dist/public to dist branch (linear history)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -65,16 +65,38 @@ jobs:
           SRC_COMMIT="$(git rev-parse --short HEAD)"
           SRC_MESSAGE="$(git log -1 --pretty=%s)"
 
+          # Stash the build output outside the working tree so we can switch branches.
           PUBLISH_DIR="$(mktemp -d)"
           cp -R "$BUILD_DIR"/. "$PUBLISH_DIR"/
           touch "$PUBLISH_DIR/.nojekyll"
 
-          cd "$PUBLISH_DIR"
-          git init -q
-          git checkout -q -b dist
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Try to fetch the existing dist branch so we can extend its history.
+          git fetch origin dist:refs/remotes/origin/dist 2>/dev/null || true
+
+          if git show-ref --verify --quiet refs/remotes/origin/dist; then
+            echo "Extending existing dist branch (no force push)."
+            git checkout -B dist refs/remotes/origin/dist
+          else
+            echo "Creating dist branch for the first time."
+            git checkout --orphan dist
+          fi
+
+          # Replace the working tree with only the new build output.
+          git rm -rf --quiet . 2>/dev/null || true
+          # `git rm` doesn't always remove untracked files in odd cases; clean explicitly too.
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+
+          cp -R "$PUBLISH_DIR"/. .
+
           git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes in built output — nothing to deploy."
+            exit 0
+          fi
+
           git commit -q -m "Deploy ${SRC_COMMIT}: ${SRC_MESSAGE}"
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push -f origin dist
+          git push origin dist
