@@ -28,16 +28,6 @@ const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolea
     });
   };
 
-  const fontProps = {
-    font: "./Vercetti-Regular.woff",
-    fontSize: 0.2,
-    color: 'white',
-    onPointerOver,
-    onPointerMove,
-    onPointerOut,
-    onClick,
-  };
-
   useEffect(() => {
     if (!document.getElementById(`footer-link-${link.name}`)) {
       const hoverDiv = document.createElement('div');
@@ -78,15 +68,48 @@ const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolea
 
   useCursor(hovered);
 
+  // Generous invisible hit-plane behind each link so taps don't have to land
+  // exactly on the text/SVG pixels. Sizes are tuned to roughly equal a 44px
+  // physical touch target at the camera's footer distance.
+  const hitWidth = isMobile ? 0.95 : 1.9;
+  const hitHeight = isMobile ? 0.95 : 0.7;
+
+  const HitArea = (
+    <mesh
+      onClick={onClick}
+      onPointerOver={onPointerOver}
+      onPointerOut={onPointerOut}
+      onPointerMove={isMobile ? undefined : onPointerMove}
+      position={[0, isMobile ? 0.15 : 0, 0.01]}
+      renderOrder={20}
+    >
+      <planeGeometry args={[hitWidth, hitHeight]} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} depthTest={false} />
+    </mesh>
+  );
+
   if (isMobile) {
-    return <Svg onClick={onClick} scale={0.0015} position={[-0.075, 0.075, 0]} src={link.icon} />;
+    return (
+      <group>
+        {HitArea}
+        {/* Bumped scale 0.0015 → 0.0022 so the icon itself is more visible too. */}
+        <Svg scale={0.0022} position={[-0.11, 0.11, 0]} src={link.icon} />
+      </group>
+    );
   }
 
   return (
-    <Text ref={textRef} {...fontProps} >
-      {link.name.toUpperCase()}
-    </Text>
-  )
+    <group ref={textRef}>
+      {HitArea}
+      <Text
+        font="./Vercetti-Regular.woff"
+        fontSize={0.2}
+        color="white"
+      >
+        {link.name.toUpperCase()}
+      </Text>
+    </group>
+  );
 }
 
 const Footer = () => {
@@ -102,7 +125,8 @@ const Footer = () => {
     }
   });
 
-  const spacing = isMobile ? 1.1 : 2;
+  // Wider spacing on mobile so the bigger hit-planes don't overlap.
+  const spacing = isMobile ? 1.4 : 2;
   const centerOffset = -((FOOTER_LINKS.length - 1) * spacing) / 2;
 
   const getLinks = () => {
