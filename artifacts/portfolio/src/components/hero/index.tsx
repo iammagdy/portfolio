@@ -37,6 +37,13 @@ const Hero = () => {
         font="./soria-font.ttf"
         fontSize={isMobile ? 0.7 : 1.2}
         color="#ffffff"
+        anchorX="center"
+        anchorY="middle"
+        maxWidth={isMobile ? 7 : 14}
+        outlineWidth={isMobile ? 0.018 : 0.025}
+        outlineColor="#0a0a0a"
+        outlineOpacity={0.55}
+        outlineBlur={isMobile ? 0.05 : 0.08}
       >
         Hi, I am Magdy Saber.
       </Text>

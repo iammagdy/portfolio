@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { EDUCATION_TIMELINE, WORK_TIMELINE } from "@constants";
 import { usePortalStore } from "@stores";
 import { WorkTimelinePoint } from "@types";
+import { useIsMobileDOM } from "../../hooks/useBreakpoint";
 
 const TimelineEntry = ({ entry }: { entry: WorkTimelinePoint }) => (
   <li className="relative pl-10">
@@ -32,17 +33,10 @@ const TimelineEntry = ({ entry }: { entry: WorkTimelinePoint }) => (
 );
 
 const MobileWorkOverlay = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobileDOM();
   const [showHint, setShowHint] = useState(true);
   const isActive = usePortalStore((s) => s.activePortalId === "work");
   const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const update = () => setIsMobile(window.innerWidth < 768);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
 
   // Reset scroll position and hint visibility every time the overlay opens.
   useEffect(() => {

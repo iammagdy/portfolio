@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PROJECTS } from "@constants";
 import { usePortalStore } from "@stores";
 import { Project, ProjectUrl } from "@types";
+import { useIsMobileDOM } from "../../hooks/useBreakpoint";
 
 const buildButtons = (project: Project): ProjectUrl[] => {
   if (project.urls && project.urls.length > 0) return project.urls;
@@ -13,16 +14,9 @@ const buildButtons = (project: Project): ProjectUrl[] => {
 const stripArrow = (text: string) => text.replace(/\s*↗\s*$/, "");
 
 const MobileProjectsOverlay = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobileDOM();
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const isActive = usePortalStore((s) => s.activePortalId === "projects");
-
-  useEffect(() => {
-    const update = () => setIsMobile(window.innerWidth < 768);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
 
   useEffect(() => {
     if (!isActive) setActiveProject(null);

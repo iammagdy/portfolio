@@ -65,8 +65,8 @@ body {
 
 .close {
   position: absolute;
-  left: 32px;
-  top: 32px;
+  left: max(16px, env(safe-area-inset-left));
+  top: max(16px, env(safe-area-inset-top));
   width: 48px;
   height: 48px;
   opacity: 0.3;
@@ -76,10 +76,10 @@ body {
   padding: 0;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (min-width: 768px) {
   .close {
-    margin-left: -24px;
-    margin-top: -16px;
+    left: max(32px, env(safe-area-inset-left));
+    top: max(32px, env(safe-area-inset-top));
   }
 }
 
