@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
-import { WORK_TIMELINE } from "@constants";
+import { EDUCATION_TIMELINE, WORK_TIMELINE } from "@constants";
 import { WorkTimelinePoint } from "@types";
 
 const onTextSync = (text: { material?: THREE.Material }) => {
@@ -95,7 +95,9 @@ const Timeline = ({ progress }: { progress: number }) => {
   const { camera, size } = useThree();
   const isMobile = size.width < 768;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
-  const timeline = useMemo(() => WORK_TIMELINE, []);
+  const timeline = useMemo(() => [...WORK_TIMELINE, ...EDUCATION_TIMELINE], []);
+  const educationStartIndex = WORK_TIMELINE.length;
+  const educationMarkerZ = (WORK_TIMELINE[WORK_TIMELINE.length - 1].point.z + EDUCATION_TIMELINE[0].point.z) / 2;
 
   const curve = useMemo(() => new THREE.CatmullRomCurve3(timeline.map(p => p.point), false), [timeline]);
   const curvePoints = useMemo(() => curve.getPoints(500), [curve]);
@@ -183,6 +185,21 @@ const Timeline = ({ progress }: { progress: number }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
           return <TimelinePoint point={point} key={i} diff={diff} />;
         })}
+        {activeIndex >= educationStartIndex - 1.2 && (
+          <Text
+            font="./soria-font.ttf"
+            color="white"
+            anchorX="center"
+            textAlign="center"
+            fontSize={0.5}
+            position={[0, 0.6, educationMarkerZ]}
+            renderOrder={12}
+            onSync={onTextSync}
+            fillOpacity={Math.min(1, Math.max(0, 1 - Math.abs(activeIndex - (educationStartIndex - 0.5))))}
+          >
+            EDUCATION
+          </Text>
+        )}
       </group>
     </group>
   );

@@ -75,7 +75,7 @@ const Work = () => {
         // "cards disappear while scrolling" issue on small screens.
         !isActive ? <MemoryTile /> : null
       ) : (
-        <ScrollControls style={{ zIndex: -1}} pages={5} maxSpeed={0.25}>
+        <ScrollControls style={{ zIndex: -1}} pages={7} maxSpeed={0.25}>
           <Memory scale={new THREE.Vector3(5, 5, 5)} position={new THREE.Vector3(0, -6, 1)}/>
           <Timeline progress={isActive ? scrollProgress : 0} />
         </ScrollControls>
