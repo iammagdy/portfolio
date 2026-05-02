@@ -49,4 +49,3 @@ export function Wanderer(props: JSX.IntrinsicElements['group']) {
   )
 }
 
-useGLTF.preload('models/wanderer_above_the_sea_of_fog.glb')
