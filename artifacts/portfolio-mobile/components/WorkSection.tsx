@@ -13,13 +13,13 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { useColors } from "@/hooks/useColors";
+import { useScrollCtx } from "@/hooks/useScrollContext";
+import { WORK_TIMELINE } from "@/constants/data";
 
 function fireSectionHaptic() {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
 }
-import { useColors } from "@/hooks/useColors";
-import { useScrollCtx } from "@/hooks/useScrollContext";
-import { WORK_TIMELINE } from "@/constants/data";
 
 export default function WorkSection() {
   const colors = useColors();
