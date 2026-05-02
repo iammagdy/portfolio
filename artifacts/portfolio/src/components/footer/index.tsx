@@ -139,9 +139,13 @@ const Footer = () => {
     });
   };
 
-  const versionLabel = `v${__APP_VERSION__} · ${__APP_COMMIT__}`;
-  const versionFontSize = isMobile ? 0.06 : 0.08;
-  const versionOffsetY = isMobile ? -0.55 : -0.5;
+  // Show only the marketing version (e.g. "v1.8"), trimming a trailing ".0" patch
+  // so the footer stays clean. Full version + commit are still in the page title
+  // attribute and the build artifacts for debugging.
+  const shortVersion = __APP_VERSION__.replace(/\.0$/, '');
+  const versionLabel = `v${shortVersion}`;
+  const versionFontSize = isMobile ? 0.16 : 0.18;
+  const versionOffsetY = isMobile ? -0.7 : -0.7;
 
   return (
     <group position={[0, -44, 18]} rotation={[-Math.PI / 2, 0, 0]} ref={groupRef}>
@@ -155,8 +159,8 @@ const Footer = () => {
         position={[0, versionOffsetY, 0]}
         anchorX="center"
         anchorY="middle"
-        fillOpacity={0.45}
-        letterSpacing={0.12}
+        fillOpacity={0.7}
+        letterSpacing={0.18}
       >
         {versionLabel}
       </Text>
