@@ -47,6 +47,7 @@ export default function SceneSwiper() {
   const onScrollEnd = () => setScrolling(false);
 
   const goTo = (i: number) => {
+    setScrolling(true);
     ref.current?.scrollTo({ x: i * W, animated: true });
   };
 
