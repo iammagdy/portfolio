@@ -5,9 +5,16 @@ import { PROJECTS } from "@constants";
 import { usePortalStore } from "@stores";
 
 const ProjectsCarousel = () => {
-  const isMobile = window.innerWidth < 768;
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
   const [activeId, setActiveId] = useState<number | null>(null);
   const isActive = usePortalStore((state) => state.activePortalId === "projects");
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   useEffect(() => {
     if (!isActive) setActiveId(null);
@@ -40,7 +47,7 @@ const ProjectsCarousel = () => {
         />
       );
     });
-  }, [activeId, isActive]);
+  }, [activeId, isActive, isMobile]);
 
   return (
     <group rotation={[0, -Math.PI / 12, 0]}>
