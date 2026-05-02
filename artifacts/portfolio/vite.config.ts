@@ -2,6 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { execSync } from "child_process";
+import { readFileSync } from "fs";
 
 const rawPort = process.env.PORT ?? "5173";
 const port = Number(rawPort);
@@ -11,8 +13,31 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? "/";
 
+const pkg = JSON.parse(
+  readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf-8"),
+) as { version: string };
+
+let commitHash = "dev";
+try {
+  commitHash = execSync("git rev-parse --short HEAD", {
+    cwd: import.meta.dirname,
+    stdio: ["ignore", "pipe", "ignore"],
+  })
+    .toString()
+    .trim();
+} catch {
+  // not in a git repo or git unavailable — keep "dev"
+}
+
+const buildDate = new Date().toISOString().slice(0, 10);
+
 export default defineConfig({
   base: basePath,
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_COMMIT__: JSON.stringify(commitHash),
+    __APP_BUILD_DATE__: JSON.stringify(buildDate),
+  },
   plugins: [
     react(),
     tailwindcss(),
