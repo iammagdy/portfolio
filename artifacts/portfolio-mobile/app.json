@@ -15,12 +15,12 @@
     },
     "ios": {
       "supportsTablet": false,
-      "buildNumber": "2"
+      "buildNumber": "1"
     },
     "android": {
       "backgroundColor": "#111111",
       "package": "com.magdysaber.portfolio",
-      "versionCode": 2
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/images/icon.png"

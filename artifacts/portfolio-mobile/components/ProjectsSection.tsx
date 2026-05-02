@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import React, { useRef, useState } from "react";
 import {
   Dimensions,
@@ -10,6 +11,7 @@ import {
 } from "react-native";
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
@@ -21,6 +23,10 @@ import { PROJECTS } from "@/constants/data";
 import ProjectCard from "./ProjectCard";
 
 const SCREEN_W = Dimensions.get("window").width;
+
+function fireSectionHaptic() {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
 
 export default function ProjectsSection() {
   const colors = useColors();
@@ -35,7 +41,10 @@ export default function ProjectsSection() {
   useAnimatedReaction(
     () => scrollY.value + viewportHeight.value * 0.75 > layoutY,
     (entered, prev) => {
-      if (entered && !prev) reveal.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) });
+      if (entered && !prev) {
+        reveal.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) });
+        runOnJS(fireSectionHaptic)();
+      }
     },
     [layoutY],
   );

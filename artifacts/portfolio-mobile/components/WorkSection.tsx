@@ -1,7 +1,9 @@
+import * as Haptics from "expo-haptics";
 import React, { useEffect, useState } from "react";
 import { type LayoutChangeEvent, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
@@ -11,6 +13,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+
+function fireSectionHaptic() {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
 import { useColors } from "@/hooks/useColors";
 import { useScrollCtx } from "@/hooks/useScrollContext";
 import { WORK_TIMELINE } from "@/constants/data";
@@ -30,6 +36,7 @@ export default function WorkSection() {
       if (entered && !prev) {
         reveal.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) });
         lineDraw.value = withTiming(1, { duration: 1400, easing: Easing.out(Easing.cubic) });
+        runOnJS(fireSectionHaptic)();
       }
     },
     [layoutY],

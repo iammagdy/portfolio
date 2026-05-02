@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   interpolate,
   type SharedValue,
@@ -40,7 +40,16 @@ export default function ProjectCard({ project, index, carouselX, screenWidth }: 
     };
   });
 
+  const handleCardPressIn = () => {
+    press.value = withSpring(0.97, { damping: 14 });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  };
+  const handleCardPressOut = () => {
+    press.value = withSpring(1, { damping: 14 });
+  };
+
   return (
+    <Pressable onPressIn={handleCardPressIn} onPressOut={handleCardPressOut}>
     <Animated.View
       style={[
         styles.card,
@@ -74,6 +83,7 @@ export default function ProjectCard({ project, index, carouselX, screenWidth }: 
         ))}
       </View>
     </Animated.View>
+    </Pressable>
   );
 }
 

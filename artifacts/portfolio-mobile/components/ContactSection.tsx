@@ -2,8 +2,9 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  type LayoutChangeEvent,
   Platform,
   StyleSheet,
   Text,
@@ -12,6 +13,8 @@ import {
 } from "react-native";
 import Animated, {
   Easing,
+  runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -22,7 +25,12 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useTheme } from "@/hooks/useAutoTheme";
+import { useScrollCtx } from "@/hooks/useScrollContext";
 import { CONTACT_LINKS } from "@/constants/data";
+
+function fireSectionHaptic() {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
 
 type FeatherIconName = React.ComponentProps<typeof Feather>["name"];
 
@@ -112,6 +120,18 @@ export default function ContactSection() {
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
   const float = useSharedValue(0);
+  const [layoutY, setLayoutY] = useState(0);
+  const { scrollY, viewportHeight } = useScrollCtx();
+
+  const onLayout = (e: LayoutChangeEvent) => setLayoutY(e.nativeEvent.layout.y);
+
+  useAnimatedReaction(
+    () => scrollY.value + viewportHeight.value * 0.75 > layoutY,
+    (entered, prev) => {
+      if (entered && !prev) runOnJS(fireSectionHaptic)();
+    },
+    [layoutY],
+  );
 
   useEffect(() => {
     float.value = withRepeat(
@@ -130,7 +150,7 @@ export default function ContactSection() {
   }));
 
   return (
-    <View style={[styles.container, { borderTopColor: colors.border, paddingBottom: bottomPad + 40 }]}>
+    <View style={[styles.container, { borderTopColor: colors.border, paddingBottom: bottomPad + 40 }]} onLayout={onLayout}>
       <View style={styles.headerRow}>
         <Text style={[styles.label, { color: colors.mutedForeground, fontFamily: "Vercetti" }]}>CONTACT</Text>
         <Animated.View style={floatStyle}>
