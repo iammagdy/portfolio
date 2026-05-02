@@ -67,26 +67,41 @@ const GridTile = (props: GridTileProps) => {
     e.stopPropagation();
     setActivePortal(id);
     document.body.style.cursor = 'auto';
-    const div = document.createElement('div');
 
-    div.className = 'fixed close';
-    div.style.transform = 'rotateX(90deg)';
-    div.onclick = () => exitPortal(true);
+    // Kill any in-flight close animation and remove stale buttons so a fast
+    // portal-to-portal switch never leaves the user without a close button.
+    document.querySelectorAll('.close').forEach((el) => {
+      gsap.killTweensOf(el);
+      el.remove();
+    });
 
-    if (!document.querySelector('.close')) {
-      document.body.appendChild(div);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fixed close';
+    btn.setAttribute('aria-label', `Close ${title} portal`);
+    btn.style.transform = 'rotateX(90deg)';
+    btn.onclick = () => exitPortal(true);
+    btn.onkeydown = (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        exitPortal(true);
+      }
+    };
+    document.body.appendChild(btn);
+    // Move keyboard focus to the close button so Tab/Enter/Space immediately
+    // work without the user having to hunt for it.
+    requestAnimationFrame(() => btn.focus());
 
-      gsap.fromTo(div, {
-        scale: 0,
-        rotate: '-180deg',
-      },{
-        opacity: 1,
-        zIndex: 10,
-        transform: 'rotateX(0deg)',
-        scale: 1,
-        duration: 1,
-      })
-    }
+    gsap.fromTo(btn, {
+      scale: 0,
+      rotate: '-180deg',
+    },{
+      opacity: 1,
+      zIndex: 10,
+      transform: 'rotateX(0deg)',
+      scale: 1,
+      duration: 1,
+    });
     document.body.addEventListener('keydown', handleEscape);
     gsap.to(portalRef.current, {
       blend: 1,

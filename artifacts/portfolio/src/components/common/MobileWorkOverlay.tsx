@@ -52,6 +52,20 @@ const MobileWorkOverlay = () => {
     }
   }, [isActive]);
 
+  // Lock body scroll while the work overlay is open so swipes don't leak
+  // through to the page underneath on small phones.
+  useEffect(() => {
+    if (!isActive) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscroll = document.body.style.overscrollBehavior;
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "contain";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscroll;
+    };
+  }, [isActive]);
+
   // Hide the "scroll for more" hint as soon as the visitor scrolls a bit.
   useEffect(() => {
     const node = scrollRef.current;

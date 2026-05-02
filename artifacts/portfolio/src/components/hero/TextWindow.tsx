@@ -50,7 +50,7 @@ const TextWindow = () => {
           scale={[1, -1, 1]}
           fontSize={0.8}
           rotation={[0, -Math.PI / 2,  -Math.PI / 2]}>
-          DESIGNER. DUMBASS.
+          DESIGNER. DEVELOPER.
         </Text>
 
         <Text color="white" anchorX="left" anchorY="middle"

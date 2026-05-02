@@ -21,7 +21,11 @@ const ScrollWrapper = (props: { children: React.ReactNode | React.ReactNode[]}) 
       const d = data.range(0.85, 0.18);
 
       if (!isActive) {
-        camera.rotation.x = THREE.MathUtils.damp(camera.rotation.x, -0.5 * Math.PI * a, 5, delta);
+        // Ease the rotation curve (a^1.6) so the first 30% of scroll doesn't
+        // produce a jarring 90° whip-pan on fast trackpad flicks. Combined
+        // with a lower damp rate (3 instead of 5) this smooths the catch-up.
+        const easedA = Math.pow(a, 1.6);
+        camera.rotation.x = THREE.MathUtils.damp(camera.rotation.x, -0.5 * Math.PI * easedA, 3, delta);
         camera.position.y = THREE.MathUtils.damp(camera.position.y, -37 * b, 7, delta);
         camera.position.z = THREE.MathUtils.damp(camera.position.z, 5 + 10 * d, 7, delta);
 

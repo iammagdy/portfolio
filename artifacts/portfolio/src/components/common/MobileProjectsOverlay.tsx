@@ -34,7 +34,17 @@ const MobileProjectsOverlay = () => {
       if (e.key === "Escape") setActiveProject(null);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscroll = document.body.style.overscrollBehavior;
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "contain";
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscroll;
+    };
   }, [activeProject]);
 
   const projectsNewestFirst = useMemo(() => [...PROJECTS].reverse(), []);

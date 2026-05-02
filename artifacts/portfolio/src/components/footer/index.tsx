@@ -18,8 +18,10 @@ const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolea
       window.open(link.url, '_blank');
     }
   };
-  const onPointerMove = (e: MouseEvent) => {
-    if (isMobile) return;
+  const onPointerMove = (e: PointerEvent) => {
+    // Skip on mobile AND on touch input (Surface, Yoga, etc) so the floating
+    // label doesn't get stuck mid-screen on touch-capable laptops.
+    if (isMobile || e.pointerType === 'touch') return;
     const hoverDiv = document.getElementById(`footer-link-${link.name}`);
     gsap.to(hoverDiv, {
       top: `${e.clientY + 14}px`,

@@ -14,7 +14,6 @@ const ProjectsCarousel = () => {
   }, [isActive]);
 
   const onClick = (id: number) => {
-    if (!isMobile) return;
     setActiveId(id === activeId ? null : id);
   };
 

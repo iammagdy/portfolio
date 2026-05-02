@@ -74,7 +74,7 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
     <div className="h-[100dvh] wrapper relative">
       <div className="h-[100dvh] relative" ref={ref}>
         <Canvas className="base-canvas"
-          shadows
+          shadows="basic"
           style={canvasStyle}
           ref={canvasRef}
           dpr={[1, 2]}>
