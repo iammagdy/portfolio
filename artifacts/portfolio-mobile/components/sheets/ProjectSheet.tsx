@@ -1,4 +1,5 @@
 import * as Haptics from "expo-haptics";
+import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useMemo, useState } from "react";
@@ -144,12 +145,21 @@ export default function ProjectSheet({ project, onClose }: Props) {
                 contentContainerStyle={styles.body}
                 showsVerticalScrollIndicator={false}
               >
-                <LinearGradient
-                  colors={gradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.cover}
-                />
+                {content.image ? (
+                  <ExpoImage
+                    source={{ uri: content.image }}
+                    style={styles.cover}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                ) : (
+                  <LinearGradient
+                    colors={gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.cover}
+                  />
+                )}
                 <Txt variant="eyebrow" color="muted" style={{ marginTop: space.lg }}>
                   {content.date} · {content.role}
                 </Txt>
