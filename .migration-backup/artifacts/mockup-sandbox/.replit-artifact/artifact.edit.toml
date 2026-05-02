@@ -1,0 +1,21 @@
+kind = "video"
+previewPath = "/portfolio-promo-video/"
+title = "Magdy Saber Portfolio Promo Video"
+version = "1.0.0"
+id = "XegfDyZt7HqfW2Bb8Ghoy"
+
+[[services]]
+localPort = 8081
+name = "web"
+paths = ["/portfolio-promo-video/"]
+
+[services.env]
+PORT = "8081"
+BASE_PATH = "/portfolio-promo-video/"
+
+[services.development]
+run = "pnpm --filter @workspace/portfolio-promo-video run dev"
+
+[services.production]
+build = "pnpm --filter @workspace/portfolio-promo-video run build"
+serve = "static"

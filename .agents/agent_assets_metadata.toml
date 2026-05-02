@@ -6,3 +6,15 @@ id = "eLO1VuvKzerobDYkms5f0"
 uri = "file://artifacts/portfolio-mobile/assets/images/icon.png"
 type = "image"
 title = "generated_image"
+
+[[generated]]
+id = "v0d_zUIZYSo0M0vTJpxCw"
+uri = "file://artifacts/portfolio-promo-video/public/images/hr-tech.png"
+type = "image"
+title = "AI HR Tech Abstract"
+
+[[generated]]
+id = "wYuD5gDoVnpna6H4A2VlJ"
+uri = "file://artifacts/portfolio-promo-video/public/images/cloud-tech.png"
+type = "image"
+title = "AI Cloud Tech Abstract"

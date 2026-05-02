@@ -1,0 +1,31 @@
+kind = "video"
+previewPath = "/portfolio-promo-video/"
+title = "Magdy Saber Portfolio Promo Video"
+version = "1.0.0"
+id = "artifacts/portfolio-promo-video"
+router = "path"
+
+[[integratedSkills]]
+name = "video-js"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/portfolio-promo-video/" ]
+localPort = 20294
+
+[services.development]
+run = "pnpm --filter @workspace/portfolio-promo-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/portfolio-promo-video", "run", "build" ]
+publicDir = "artifacts/portfolio-promo-video/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20294"
+BASE_PATH = "/portfolio-promo-video/"
