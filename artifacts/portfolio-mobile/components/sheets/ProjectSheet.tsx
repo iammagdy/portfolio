@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   Modal,
@@ -39,22 +39,46 @@ interface Props {
 export default function ProjectSheet({ project, onClose }: Props) {
   const colors = useColors();
   const open = project != null;
+  const [mounted, setMounted] = useState(false);
+  const [content, setContent] = useState<Project | null>(null);
 
   const ty = useSharedValue(SHEET_HEIGHT);
   const backdrop = useSharedValue(0);
 
   useEffect(() => {
+    if (open && project) {
+      setContent(project);
+      setMounted(true);
+    }
+  }, [open, project]);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (open) {
       ty.value = withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) });
       backdrop.value = withTiming(1, { duration: 220 });
-    } else {
-      ty.value = withTiming(SHEET_HEIGHT, { duration: 240, easing: Easing.in(Easing.cubic) });
-      backdrop.value = withTiming(0, { duration: 200 });
     }
-  }, [open, ty, backdrop]);
+  }, [mounted, open, ty, backdrop]);
+
+  const finishClose = () => {
+    setMounted(false);
+    setContent(null);
+  };
+
+  const animateClose = () => {
+    backdrop.value = withTiming(0, { duration: 200 });
+    ty.value = withTiming(
+      SHEET_HEIGHT,
+      { duration: 240, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(finishClose)();
+      },
+    );
+  };
 
   const close = () => {
     Haptics.selectionAsync().catch(() => {});
+    animateClose();
     onClose();
   };
 
@@ -64,8 +88,12 @@ export default function ProjectSheet({ project, onClose }: Props) {
     })
     .onEnd((e) => {
       if (e.translationY > 110 || e.velocityY > 700) {
+        backdrop.value = withTiming(0, { duration: 200 });
         ty.value = withTiming(SHEET_HEIGHT, { duration: 200 }, (finished) => {
-          if (finished) runOnJS(onClose)();
+          if (finished) {
+            runOnJS(onClose)();
+            runOnJS(finishClose)();
+          }
         });
       } else {
         ty.value = withTiming(0, { duration: 220 });
@@ -80,13 +108,13 @@ export default function ProjectSheet({ project, onClose }: Props) {
   }));
 
   const gradient = useMemo<[string, string]>(() => {
-    const c = project?.color ?? colors.accent;
+    const c = content?.color ?? colors.accent;
     return [c, shade(c, -40)];
-  }, [project, colors.accent]);
+  }, [content, colors.accent]);
 
   return (
     <Modal
-      visible={open}
+      visible={mounted}
       transparent
       animationType="none"
       onRequestClose={close}
@@ -110,7 +138,7 @@ export default function ProjectSheet({ project, onClose }: Props) {
             ]}
           >
             <View style={[styles.handle, { backgroundColor: colors.muted }]} />
-            {project ? (
+            {content ? (
               <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={styles.body}
@@ -123,14 +151,14 @@ export default function ProjectSheet({ project, onClose }: Props) {
                   style={styles.cover}
                 />
                 <Txt variant="eyebrow" color="muted" style={{ marginTop: space.lg }}>
-                  {project.date} · {project.role}
+                  {content.date} · {content.role}
                 </Txt>
                 <Txt variant="headline" style={{ marginTop: space.xs }}>
-                  {project.title}
+                  {content.title}
                 </Txt>
 
                 <View style={styles.tags}>
-                  {project.tags.map((t) => (
+                  {content.tags.map((t) => (
                     <View
                       key={t}
                       style={[
@@ -152,11 +180,11 @@ export default function ProjectSheet({ project, onClose }: Props) {
                 </View>
 
                 <Txt variant="bodyLg" color="muted" style={{ marginTop: space.md }}>
-                  {project.subtext}
+                  {content.subtext}
                 </Txt>
 
                 <View style={styles.actions}>
-                  {project.urls.map((u, i) => (
+                  {content.urls.map((u, i) => (
                     <Pill
                       key={u.text + i}
                       label={u.text}
