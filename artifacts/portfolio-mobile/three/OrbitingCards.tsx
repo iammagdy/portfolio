@@ -76,6 +76,49 @@ interface CardProps {
   onPress: () => void;
 }
 
+function shadeHex(hex: string, amount: number): string {
+  const h = hex.replace("#", "");
+  const num = parseInt(h, 16);
+  let r = (num >> 16) + amount;
+  let g = ((num >> 8) & 0xff) + amount;
+  let b = (num & 0xff) + amount;
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
+function GradientMaterial({ color }: { color: string }) {
+  const material = React.useMemo(() => {
+    const top = new THREE.Color(color);
+    const bottom = new THREE.Color(shadeHex(color, -50));
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        topColor: { value: top },
+        bottomColor: { value: bottom },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform vec3 topColor;
+        uniform vec3 bottomColor;
+        void main() {
+          vec3 c = mix(bottomColor, topColor, vUv.y);
+          gl_FragColor = vec4(c, 1.0);
+        }
+      `,
+      side: THREE.DoubleSide,
+    });
+  }, [color]);
+  return <primitive object={material} attach="material" />;
+}
+
 function Card({ position, rotationY, color, image, onPress }: CardProps) {
   const ref = useRef<THREE.Mesh>(null);
   const tex = useImageTexture(image);
@@ -104,14 +147,7 @@ function Card({ position, rotationY, color, image, onPress }: CardProps) {
             side={THREE.DoubleSide}
           />
         ) : (
-          <meshStandardMaterial
-            color={color}
-            metalness={0.3}
-            roughness={0.4}
-            emissive={color}
-            emissiveIntensity={0.45}
-            side={THREE.DoubleSide}
-          />
+          <GradientMaterial color={color} />
         )}
       </mesh>
       <mesh position={[0, -0.85, 0.01]}>

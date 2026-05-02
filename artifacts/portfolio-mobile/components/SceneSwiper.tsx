@@ -60,7 +60,6 @@ export default function SceneSwiper() {
         onScroll={onScroll}
         onScrollBeginDrag={onScrollBegin}
         onMomentumScrollEnd={onScrollEnd}
-        onScrollEndDrag={onScrollEnd}
         scrollEventThrottle={16}
         style={styles.scroll}
         testID="scene-swiper"
