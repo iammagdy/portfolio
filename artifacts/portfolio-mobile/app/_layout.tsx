@@ -14,7 +14,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider, useTheme } from "@/hooks/useAutoTheme";
-import { ScrollProvider } from "@/hooks/useScrollContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,9 +54,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <ThemeProvider>
-              <ScrollProvider>
-                <RootLayoutNav />
-              </ScrollProvider>
+              <RootLayoutNav />
             </ThemeProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
