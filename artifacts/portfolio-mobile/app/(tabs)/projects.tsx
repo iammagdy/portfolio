@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Pressable,
   RefreshControl,
@@ -7,6 +7,12 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Divider from "@/components/ui/Divider";
 import Txt from "@/components/ui/Text";
@@ -21,7 +27,7 @@ export default function ProjectsRoute() {
   const insets = useSafeAreaInsets();
   const [active, setActive] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [version, setVersion] = useState(0);
+  const listOpacity = useSharedValue(1);
 
   const open = (i: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -31,11 +37,21 @@ export default function ProjectsRoute() {
   const onRefresh = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     setRefreshing(true);
+    listOpacity.value = withTiming(0.4, { duration: 200 });
     setTimeout(() => {
-      setVersion((v) => v + 1);
+      listOpacity.value = withTiming(1, {
+        duration: 320,
+        easing: Easing.out(Easing.cubic),
+      });
       setRefreshing(false);
     }, 700);
-  }, []);
+  }, [listOpacity]);
+
+  useEffect(() => {
+    listOpacity.value = 1;
+  }, [listOpacity]);
+
+  const listStyle = useAnimatedStyle(() => ({ opacity: listOpacity.value }));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -67,7 +83,7 @@ export default function ProjectsRoute() {
           Pull down to refresh. Tap any row to open.
         </Txt>
 
-        <View style={{ marginTop: space.xl }} key={version}>
+        <Animated.View style={[{ marginTop: space.xl }, listStyle]}>
           {PROJECTS.map((p, i) => (
             <View key={p.title}>
               <Pressable
@@ -109,7 +125,7 @@ export default function ProjectsRoute() {
               {i < PROJECTS.length - 1 ? <Divider /> : null}
             </View>
           ))}
-        </View>
+        </Animated.View>
       </ScrollView>
 
       <ProjectSheet

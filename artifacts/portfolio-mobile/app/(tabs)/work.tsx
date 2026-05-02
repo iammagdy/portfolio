@@ -48,22 +48,15 @@ export default function JourneyRoute() {
                       },
                     ]}
                   />
-                  {i < WORK_TIMELINE.length - 1 ? (
+                  {!latest && (
                     <View
                       style={[styles.line, { backgroundColor: colors.border }]}
                     />
-                  ) : null}
+                  )}
                 </View>
 
                 <View style={styles.right}>
-                  <Txt
-                    style={[
-                      styles.title,
-                      {
-                        color: latest ? colors.foreground : colors.foreground,
-                      },
-                    ]}
-                  >
+                  <Txt style={[styles.title, { color: colors.foreground }]}>
                     {entry.title}
                   </Txt>
                   {entry.subtitle ? (
