@@ -12,7 +12,7 @@ import { useColors } from "@/hooks/useColors";
 interface Props {
   label: string;
   onPress?: () => void;
-  variant?: "primary" | "ghost" | "outline";
+  variant?: "primary" | "ghost" | "outline" | "accent";
   trailing?: string;
   style?: ViewStyle;
   disabled?: boolean;
@@ -44,17 +44,18 @@ export default function Pill({
   const bg =
     variant === "primary"
       ? colors.foreground
-      : variant === "outline"
-        ? "transparent"
+      : variant === "accent"
+        ? colors.accent
         : "transparent";
   const fg =
     variant === "primary"
       ? colors.background
-      : variant === "outline"
-        ? colors.foreground
+      : variant === "accent"
+        ? colors.onAccent
         : colors.foreground;
   const borderColor =
     variant === "outline" ? colors.border : "transparent";
+  const borderW = variant === "outline" ? 1 : 0;
 
   return (
     <Animated.View style={[fullWidth ? { alignSelf: "stretch" } : null, animStyle, style]}>
@@ -72,7 +73,7 @@ export default function Pill({
           {
             backgroundColor: bg,
             borderColor,
-            borderWidth: variant === "outline" ? 1 : 0,
+            borderWidth: borderW,
             opacity: disabled ? 0.4 : 1,
           },
         ]}

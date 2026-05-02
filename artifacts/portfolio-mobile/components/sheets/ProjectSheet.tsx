@@ -199,7 +199,7 @@ export default function ProjectSheet({ project, onClose }: Props) {
                       key={u.text + i}
                       label={u.text}
                       trailing="↗"
-                      variant={i === 0 ? "primary" : "outline"}
+                      variant={i === 0 ? "accent" : "outline"}
                       disabled={!!u.disabled || !u.url}
                       onPress={() => {
                         if (u.url) WebBrowser.openBrowserAsync(u.url).catch(() => {});
