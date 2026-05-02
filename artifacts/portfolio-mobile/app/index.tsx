@@ -1,6 +1,6 @@
+import { Redirect } from "expo-router";
 import React from "react";
-import SceneSwiper from "@/components/SceneSwiper";
 
-export default function PortfolioScreen() {
-  return <SceneSwiper />;
+export default function Index() {
+  return <Redirect href="/(tabs)" />;
 }

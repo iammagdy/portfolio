@@ -1,9 +1,20 @@
 import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useMemo } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  Gesture,
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import Animated, {
   Easing,
   runOnJS,
@@ -11,10 +22,14 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useColors } from "@/hooks/useColors";
+import Pill from "@/components/ui/Pill";
+import Txt from "@/components/ui/Text";
+import { space } from "@/constants/typography";
 import type { Project } from "@/constants/data";
+import { useColors } from "@/hooks/useColors";
 
 const { height: H } = Dimensions.get("window");
+const SHEET_HEIGHT = Math.min(H * 0.78, 720);
 
 interface Props {
   project: Project | null;
@@ -23,132 +38,120 @@ interface Props {
 
 export default function ProjectSheet({ project, onClose }: Props) {
   const colors = useColors();
-  const open = useSharedValue(0);
+  const open = project != null;
+
+  const ty = useSharedValue(SHEET_HEIGHT);
+  const backdrop = useSharedValue(0);
 
   useEffect(() => {
-    open.value = withTiming(project ? 1 : 0, {
-      duration: 320,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [project, open]);
-
-  const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (1 - open.value) * H }],
-  }));
-  const backdropStyle = useAnimatedStyle(() => ({
-    opacity: open.value * 0.6,
-  }));
+    if (open) {
+      ty.value = withTiming(0, { duration: 320, easing: Easing.out(Easing.cubic) });
+      backdrop.value = withTiming(1, { duration: 220 });
+    } else {
+      ty.value = withTiming(SHEET_HEIGHT, { duration: 240, easing: Easing.in(Easing.cubic) });
+      backdrop.value = withTiming(0, { duration: 200 });
+    }
+  }, [open, ty, backdrop]);
 
   const close = () => {
     Haptics.selectionAsync().catch(() => {});
-    open.value = withTiming(0, { duration: 240 }, (finished) => {
-      if (finished) runOnJS(onClose)();
-    });
+    onClose();
   };
 
-  const visible = project != null;
+  const dismiss = Gesture.Pan()
+    .onChange((e) => {
+      if (e.translationY > 0) ty.value = e.translationY;
+    })
+    .onEnd((e) => {
+      if (e.translationY > 110 || e.velocityY > 700) {
+        ty.value = withTiming(SHEET_HEIGHT, { duration: 200 }, (finished) => {
+          if (finished) runOnJS(onClose)();
+        });
+      } else {
+        ty.value = withTiming(0, { duration: 220 });
+      }
+    });
 
-  return (
-    <View
-      pointerEvents={visible ? "auto" : "none"}
-      style={StyleSheet.absoluteFill}
-    >
-      <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, backdropStyle]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-      </Animated.View>
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: ty.value }],
+  }));
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdrop.value * 0.6,
+  }));
 
-      <Animated.View
-        style={[
-          styles.sheet,
-          { backgroundColor: colors.background, borderColor: colors.foreground + "33" },
-          sheetStyle,
-        ]}
-      >
-        <View style={styles.handle} />
-        {project ? (
-          <View style={styles.body}>
-            <ProjectCover project={project} />
-            <Text style={[styles.title, { color: colors.foreground, fontFamily: "Soria" }]}>
-              {project.title}
-            </Text>
-            <Text style={[styles.date, { color: colors.foreground, opacity: 0.55 }]}>
-              {project.date}
-            </Text>
-            <Text style={[styles.desc, { color: colors.foreground, opacity: 0.85 }]}>
-              {project.subtext}
-            </Text>
-            <View style={styles.links}>
-              {project.urls.map((u) => (
-                <Pressable
-                  key={u.text}
-                  disabled={u.disabled || !u.url}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                    if (u.url) WebBrowser.openBrowserAsync(u.url).catch(() => {});
-                  }}
-                  style={({ pressed }) => [
-                    styles.linkBtn,
-                    {
-                      borderColor: colors.foreground,
-                      opacity: u.disabled || !u.url ? 0.4 : pressed ? 0.7 : 1,
-                      backgroundColor: pressed ? colors.foreground : "transparent",
-                    },
-                  ]}
-                >
-                  {({ pressed }) => (
-                    <Text
-                      style={[
-                        styles.linkText,
-                        {
-                          color: pressed ? colors.background : colors.foreground,
-                          fontFamily: "Vercetti",
-                        },
-                      ]}
-                    >
-                      {u.text}
-                      {u.disabled || !u.url ? "  ·  soon" : "  ↗"}
-                    </Text>
-                  )}
-                </Pressable>
-              ))}
-            </View>
-
-            <Pressable onPress={close} style={styles.closeBtn}>
-              <Text style={[styles.closeText, { color: colors.foreground, opacity: 0.7 }]}>
-                close
-              </Text>
-            </Pressable>
-          </View>
-        ) : null}
-      </Animated.View>
-    </View>
-  );
-}
-
-function ProjectCover({ project }: { project: Project }) {
   const gradient = useMemo<[string, string]>(() => {
-    const c = project.color ?? "#0690d4";
+    const c = project?.color ?? colors.accent;
     return [c, shade(c, -40)];
-  }, [project.color]);
+  }, [project, colors.accent]);
 
-  if (project.image) {
-    return (
-      <Image
-        source={{ uri: project.image }}
-        style={styles.cover}
-        contentFit="cover"
-        transition={200}
-        accessibilityIgnoresInvertColors
-      />
-    );
-  }
   return (
-    <LinearGradient
-      colors={gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.cover}
-    />
+    <Modal
+      visible={open}
+      transparent
+      animationType="none"
+      onRequestClose={close}
+      statusBarTranslucent
+    >
+      <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={close}>
+          <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, backdropStyle]} />
+        </Pressable>
+
+        <GestureDetector gesture={dismiss}>
+          <Animated.View
+            style={[
+              styles.sheet,
+              {
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+                height: SHEET_HEIGHT,
+              },
+              sheetStyle,
+            ]}
+          >
+            <View style={[styles.handle, { backgroundColor: colors.muted }]} />
+            {project ? (
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={styles.body}
+                showsVerticalScrollIndicator={false}
+              >
+                <LinearGradient
+                  colors={gradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.cover}
+                />
+                <Txt variant="eyebrow" color="muted" style={{ marginTop: space.lg }}>
+                  {project.date}
+                </Txt>
+                <Txt variant="headline" style={{ marginTop: space.xs }}>
+                  {project.title}
+                </Txt>
+                <Txt variant="bodyLg" color="muted" style={{ marginTop: space.md }}>
+                  {project.subtext}
+                </Txt>
+
+                <View style={styles.actions}>
+                  {project.urls.map((u, i) => (
+                    <Pill
+                      key={u.text + i}
+                      label={u.text}
+                      trailing="↗"
+                      variant={i === 0 ? "primary" : "outline"}
+                      disabled={!!u.disabled || !u.url}
+                      onPress={() => {
+                        if (u.url) WebBrowser.openBrowserAsync(u.url).catch(() => {});
+                      }}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            ) : null}
+          </Animated.View>
+        </GestureDetector>
+      </GestureHandlerRootView>
+    </Modal>
   );
 }
 
@@ -171,35 +174,20 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    minHeight: H * 0.55,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    borderWidth: 1,
-    paddingTop: 12,
-    paddingHorizontal: 24,
-    paddingBottom: 36,
+    borderTopWidth: 1,
+    overflow: "hidden",
   },
   handle: {
-    alignSelf: "center",
-    width: 36,
+    width: 44,
     height: 4,
-    borderRadius: 4,
-    backgroundColor: "rgba(255,255,255,0.4)",
-    marginBottom: 18,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 10,
+    opacity: 0.4,
   },
-  body: { gap: 10 },
-  cover: { height: 140, borderRadius: 18, marginBottom: 8, opacity: 0.85 },
-  title: { fontSize: 32, lineHeight: 36 },
-  date: { fontSize: 12, letterSpacing: 2 },
-  desc: { fontSize: 14, lineHeight: 21, marginTop: 6 },
-  links: { flexDirection: "row", gap: 10, marginTop: 18, flexWrap: "wrap" },
-  linkBtn: {
-    borderWidth: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-  },
-  linkText: { fontSize: 12, letterSpacing: 1.8 },
-  closeBtn: { alignSelf: "center", marginTop: 22, padding: 8 },
-  closeText: { fontSize: 11, letterSpacing: 3 },
+  body: { paddingHorizontal: 28, paddingBottom: 56 },
+  cover: { width: "100%", aspectRatio: 16 / 10, borderRadius: 14, marginTop: space.lg },
+  actions: { gap: 10, marginTop: space.xl },
 });
