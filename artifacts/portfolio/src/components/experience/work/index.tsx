@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import * as THREE from "three";
 import { Memory } from "../../models/Memory";
 import Timeline from "./Timeline";
+import { MOBILE_BREAKPOINT } from "../../../hooks/useBreakpoint";
 
 const MemoryTile = () => {
   const texture = useTexture('/images/memory-tile.png');
@@ -18,7 +19,7 @@ const MemoryTile = () => {
 
 const Work = () => {
   const { size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = size.width < MOBILE_BREAKPOINT;
   const isActive = usePortalStore((state) => state.activePortalId === 'work');
   const { scrollProgress, setScrollProgress } = useScrollStore();
 

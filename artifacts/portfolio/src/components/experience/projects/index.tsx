@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { usePortalStore } from "@stores";
 import { Wanderer } from "../../models/Wanderer";
 import ProjectsCarousel from "./ProjectsCarousel";
+import { MOBILE_BREAKPOINT } from "../../../hooks/useBreakpoint";
 
 const WandererTile = () => {
   const texture = useTexture('/images/wanderer-tile.png');
@@ -19,7 +20,7 @@ const WandererTile = () => {
 
 const Projects = () => {
   const { camera, size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = size.width < MOBILE_BREAKPOINT;
   const isActive = usePortalStore((state) => state.activePortalId === "projects");
   const data = useScroll();
 

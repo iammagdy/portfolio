@@ -1,4 +1,3 @@
-// import "react-crud-icons/dist/react-crud-icons.css";
 
 import { useGSAP } from "@gsap/react";
 import { usePortalStore, useThemeStore } from "@stores";

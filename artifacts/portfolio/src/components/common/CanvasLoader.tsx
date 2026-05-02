@@ -1,28 +1,31 @@
-;
-
 import { useGSAP } from "@gsap/react";
-import { AdaptiveDpr, Preload, ScrollControls, useProgress } from "@react-three/drei";
+import { AdaptiveDpr, Environment, ScrollControls, useProgress } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import gsap from "gsap";
 import { Suspense, useEffect, useRef, useState } from "react";
 
 import { useThemeStore } from "@stores";
+import { SMALL_BREAKPOINT, TABLET_BREAKPOINT } from "../../hooks/useBreakpoint";
 
+import PortalCloseButton from "./PortalCloseButton";
 import Preloader from "./Preloader";
 import ProgressLoader from "./ProgressLoader";
 import { ScrollHint } from "./ScrollHint";
+import SectionIndicator from "./SectionIndicator";
 import ThemeSwitcher from "./ThemeSwitcher";
-// import {Perf} from "r3f-perf"
 
 const getResponsiveBorder = (width: number) => {
-  if (width < 640) return { inset: 0, width: "100%", height: "100%" };
-  if (width < 1024)
+  if (width < SMALL_BREAKPOINT) return { inset: 0, width: "100%", height: "100%" };
+  if (width < TABLET_BREAKPOINT)
     return { inset: "0.5rem", width: "calc(100% - 1rem)", height: "calc(100% - 1rem)" };
   return { inset: "1rem", width: "calc(100% - 2rem)", height: "calc(100% - 2rem)" };
 };
 
+const NOISE_SVG =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E\")";
+
 const CanvasLoader = (props: { children: React.ReactNode }) => {
-  const ref= useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const backgroundColor = useThemeStore((state) => state.theme.color);
   const { progress } = useProgress();
@@ -48,6 +51,7 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
   useGSAP(() => {
     if (progress === 100) {
       gsap.to('.base-canvas', { opacity: 1, duration: 3, delay: 1 });
+      gsap.to('.grain-overlay', { opacity: 0.18, duration: 3, delay: 1.4 });
     }
   }, [progress]);
 
@@ -59,42 +63,60 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
     gsap.to(canvasRef.current, {
       backgroundColor: backgroundColor,
       duration: 1,
-      ...noiseOverlayStyle,
     });
   }, [backgroundColor]);
-
-  const noiseOverlayStyle = {
-    backgroundBlendMode: "soft-light",
-    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)'/%3E%3C/svg%3E\")",
-    backgroundRepeat: "repeat",
-    backgroundSize: "100px",
-  };
 
   return (
     <div className="h-[100dvh] wrapper relative">
       <div className="h-[100dvh] relative" ref={ref}>
         <Canvas className="base-canvas"
-          shadows="basic"
+          shadows="soft"
           style={canvasStyle}
           ref={canvasRef}
+          gl={{ antialias: true, toneMappingExposure: 1.05 }}
           dpr={[1, 2]}>
-          {/* <Perf/> */}
           <Suspense fallback={null}>
-            <ambientLight intensity={0.5} />
+            {/* Soft IBL so MeshPhysicalMaterial surfaces (the window frame
+                and glass handle) pick up subtle reflections and warmth. */}
+            <Environment preset="sunset" environmentIntensity={0.45} background={false} />
+            <ambientLight intensity={0.55} />
+            {/* Cool global rim from camera-side so silhouettes pop against
+                the saturated background; subtle so it doesn't compete with
+                scene-local lights. */}
+            <directionalLight position={[-6, 4, 8]} intensity={0.35} color={'#cfe6ff'} />
 
             <ScrollControls pages={4} damping={0.4} maxSpeed={1} distance={1} style={{ zIndex: 1 }}>
               {props.children}
               <Preloader />
             </ScrollControls>
-
-            <Preload all />
           </Suspense>
           <AdaptiveDpr pixelated/>
         </Canvas>
+        {/* Film-grain overlay rendered above the canvas so it's actually
+            visible (the previous backgroundBlendMode trick was hidden by
+            the opaque WebGL canvas). pointer-events:none keeps it from
+            stealing clicks. */}
+        <div
+          aria-hidden="true"
+          className="grain-overlay"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            opacity: 0,
+            mixBlendMode: 'overlay',
+            backgroundImage: NOISE_SVG,
+            backgroundRepeat: 'repeat',
+            backgroundSize: '180px',
+            zIndex: 2,
+          }}
+        />
         <ProgressLoader progress={progress} />
       </div>
       <ThemeSwitcher />
       <ScrollHint />
+      <SectionIndicator />
+      <PortalCloseButton />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { usePortalStore } from '@stores';
 import gsap from "gsap";
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { MOBILE_BREAKPOINT } from '../../hooks/useBreakpoint';
 
 interface GridTileProps {
   id: string;
@@ -23,7 +24,7 @@ const GridTile = (props: GridTileProps) => {
   const portalRef = useRef(null);
   const { title, textAlign, children, color, position, id } = props;
   const { camera, size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = size.width < MOBILE_BREAKPOINT;
   const setActivePortal = usePortalStore((state) => state.setActivePortal);
   const isActive = usePortalStore((state) => state.activePortalId === id);
   const activePortalId = usePortalStore((state) => state.activePortalId);
@@ -56,92 +57,35 @@ const GridTile = (props: GridTileProps) => {
     }
   });
 
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      exitPortal(true);
-    }
-  };
-
   const portalInto = (e: React.MouseEvent) => {
     if (isActive || activePortalId) return;
     e.stopPropagation();
     setActivePortal(id);
-    document.body.style.cursor = 'auto';
-
-    // Kill any in-flight close animation and remove stale buttons so a fast
-    // portal-to-portal switch never leaves the user without a close button.
-    document.querySelectorAll('.close').forEach((el) => {
-      gsap.killTweensOf(el);
-      el.remove();
-    });
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'fixed close';
-    btn.setAttribute('aria-label', `Close ${title} portal`);
-    btn.style.transform = 'rotateX(90deg)';
-    btn.onclick = () => exitPortal(true);
-    btn.onkeydown = (ev) => {
-      if (ev.key === 'Enter' || ev.key === ' ') {
-        ev.preventDefault();
-        exitPortal(true);
-      }
-    };
-    document.body.appendChild(btn);
-    // Move keyboard focus to the close button so Tab/Enter/Space immediately
-    // work without the user having to hunt for it.
-    requestAnimationFrame(() => btn.focus());
-
-    gsap.fromTo(btn, {
-      scale: 0,
-      rotate: '-180deg',
-    },{
-      opacity: 1,
-      zIndex: 10,
-      transform: 'rotateX(0deg)',
-      scale: 1,
-      duration: 1,
-    });
-    document.body.addEventListener('keydown', handleEscape);
-    gsap.to(portalRef.current, {
-      blend: 1,
-      duration: 0.5,
-    });
   };
 
-  const exitPortal = (force = false) => {
-    if (!force && !activePortalId) return;
-    setActivePortal(null);
-
-    // Kill any in-flight camera tweens so the scroll system can cleanly
-    // resume driving rotation.x / position.y / position.z via useFrame.
-    gsap.killTweensOf(camera.position);
-    gsap.killTweensOf(camera.rotation);
-
-    // Only reset x — the scroll system does not control it, but the
-    // Projects portal may have moved it (desktop: x=2).
-    gsap.to(camera.position, {
-      x: 0,
-      duration: 0.8,
-    });
-
-    gsap.to(portalRef.current, {
-      blend: 0,
-      duration: 1,
-    });
-
-    // Remove the div from the dom
-    gsap.to(document.querySelector('.close'), {
-      scale: 0,
-      duration: 0.5,
-      onComplete: () => {
-        document.querySelectorAll('.close').forEach((el) => {
-          el.remove();
-        });
-      }
-    })
-    document.body.removeEventListener('keydown', handleEscape);
-  }
+  // Drive portal entry/exit animations off the store state instead of
+  // imperative side effects. This makes Esc, the close button, and clicks
+  // all converge on the same code path and removes the stray DOM button
+  // that used to be injected into document.body.
+  const wasActiveRef = useRef(false);
+  useEffect(() => {
+    if (isActive) {
+      wasActiveRef.current = true;
+      document.body.style.cursor = 'auto';
+      gsap.to(portalRef.current, { blend: 1, duration: 0.5 });
+      return;
+    }
+    // Skip the initial inactive→inactive render; only run exit cleanup
+    // if this tile was previously active.
+    if (!wasActiveRef.current) return;
+    wasActiveRef.current = false;
+    if (portalRef.current) {
+      gsap.killTweensOf(camera.position);
+      gsap.killTweensOf(camera.rotation);
+      gsap.to(camera.position, { x: 0, duration: 0.8 });
+      gsap.to(portalRef.current, { blend: 0, duration: 1 });
+    }
+  }, [isActive, camera]);
 
   const fontProps: Partial<TextProps> = {
     font: "./soria-font.ttf",
@@ -206,7 +150,7 @@ const GridTile = (props: GridTileProps) => {
           {title}
         </Text>
       </group>
-      <MeshPortalMaterial ref={portalRef} blend={0} resolution={0} blur={0}>
+      <MeshPortalMaterial ref={portalRef} blend={0} resolution={1024} blur={0}>
         <color attach="background" args={[color]} />
         {children}
       </MeshPortalMaterial>

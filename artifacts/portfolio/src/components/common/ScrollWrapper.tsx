@@ -6,6 +6,7 @@ import * as THREE from "three";
 
 import { usePortalStore, useScrollStore } from "@stores";
 import TiltGroup from "./TiltGroup";
+import { MOBILE_BREAKPOINT } from "../../hooks/useBreakpoint";
 
 const ScrollWrapper = (props: { children: React.ReactNode | React.ReactNode[]}) => {
   const { camera, size } = useThree();
@@ -15,7 +16,7 @@ const ScrollWrapper = (props: { children: React.ReactNode | React.ReactNode[]}) 
 
   useFrame((state, delta) => {
     if (data) {
-      const isMobile = size.width < 768;
+      const isMobile = size.width < MOBILE_BREAKPOINT;
       const a = data.range(0, 0.3);
       const b = data.range(0.3, 0.5);
       const d = data.range(0.85, 0.18);

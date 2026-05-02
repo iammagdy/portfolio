@@ -6,10 +6,11 @@ import * as THREE from 'three';
 import GridTile from "./GridTile";
 import Projects from "./projects";
 import Work from "./work";
+import { MOBILE_BREAKPOINT } from "../../hooks/useBreakpoint";
 
 const Experience = () => {
   const { size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = size.width < MOBILE_BREAKPOINT;
   const titleRef = useRef<THREE.Group>(null);
   const groupRef = useRef<THREE.Group>(null);
   const data = useScroll();

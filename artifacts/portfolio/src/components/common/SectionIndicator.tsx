@@ -1,0 +1,61 @@
+import { useEffect, useState } from 'react';
+import { usePortalStore, useScrollStore } from '@stores';
+
+const SECTIONS = ['Hero', 'Experience', 'Projects', 'Contact'];
+
+const SectionIndicator = () => {
+  const scrollProgress = useScrollStore((s) => s.scrollProgress);
+  const portalActive = usePortalStore((s) => !!s.activePortalId);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    setProgress(scrollProgress);
+  }, [scrollProgress]);
+
+  if (portalActive) return null;
+
+  const activeIndex = Math.min(
+    SECTIONS.length - 1,
+    Math.floor(progress * SECTIONS.length + 0.001),
+  );
+
+  return (
+    <nav
+      aria-label="Page sections"
+      style={{
+        position: 'fixed',
+        right: 'max(1.25rem, env(safe-area-inset-right))',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '14px',
+        zIndex: 5,
+        pointerEvents: 'none',
+        opacity: 0.85,
+      }}
+    >
+      {SECTIONS.map((label, i) => {
+        const isActive = i === activeIndex;
+        return (
+          <span
+            key={label}
+            aria-label={label}
+            aria-current={isActive ? 'true' : undefined}
+            style={{
+              display: 'block',
+              width: isActive ? '10px' : '6px',
+              height: isActive ? '10px' : '6px',
+              borderRadius: '50%',
+              background: isActive ? '#ffffff' : 'rgba(255,255,255,0.45)',
+              boxShadow: isActive ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
+              transition: 'all 0.35s ease',
+            }}
+          />
+        );
+      })}
+    </nav>
+  );
+};
+
+export default SectionIndicator;

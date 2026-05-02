@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { FOOTER_LINKS } from "../../constants";
 import { FooterLink } from "../../types";
+import { MOBILE_BREAKPOINT } from "../../hooks/useBreakpoint";
 
 const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolean }) => {
   const textRef = useRef<THREE.Group>(null);
@@ -118,7 +119,7 @@ const Footer = () => {
   const groupRef = useRef<THREE.Group>(null);
   const data = useScroll();
   const { size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = size.width < MOBILE_BREAKPOINT;
 
   useFrame(() => {
     const d = data.range(0.8, 0.2);

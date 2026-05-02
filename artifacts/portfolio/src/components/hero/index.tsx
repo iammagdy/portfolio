@@ -7,6 +7,7 @@ import CloudContainer from "../models/Cloud";
 import StarsContainer from "../models/Stars";
 import WindowModel from "../models/WindowModel";
 import TextWindow from "./TextWindow";
+import { MOBILE_BREAKPOINT } from "../../hooks/useBreakpoint";
 
 const Hero = () => {
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -14,7 +15,7 @@ const Hero = () => {
 
   const { progress } = useProgress();
   const { size } = useThree();
-  const isMobile = size.width < 768;
+  const isMobile = size.width < MOBILE_BREAKPOINT;
 
   useEffect(() => {
     if (progress === 100 && titleRef.current) {
@@ -42,7 +43,12 @@ const Hero = () => {
       <StarsContainer />
       <CloudContainer/>
       <group position={[0, -25, 5.69]}>
-        <pointLight castShadow position={[1, 1, -2.5]} intensity={60} distance={10}/>
+        {/* Warm key light from outside the window to backlight the frame. */}
+        <pointLight castShadow position={[1, 1, -2.5]} intensity={60} distance={10} color={'#ffe9c4'} />
+        {/* Cool fill from camera-side to lift the front face of the frame. */}
+        <pointLight position={[-2, 0.8, 2]} intensity={6} distance={8} color={'#9ec7ff'} />
+        {/* Subtle rim from above to sketch the silhouette. */}
+        <directionalLight position={[0, 4, 1]} intensity={0.6} color={'#ffffff'} />
         <WindowModel receiveShadow/>
         <TextWindow/>
       </group>
