@@ -1,15 +1,18 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Appearance, useColorScheme } from "react-native";
 
 export type ThemeMode = "light" | "dark";
 type Override = ThemeMode | null;
 
 const STORAGE_KEY = "theme-override";
-
-function autoFromHour(): ThemeMode {
-  const h = new Date().getHours();
-  return h >= 18 || h < 6 ? "dark" : "light";
-}
 
 interface ThemeContextValue {
   theme: ThemeMode;
@@ -24,9 +27,13 @@ interface ProviderProps {
   children: React.ReactNode;
 }
 
+function systemMode(): ThemeMode {
+  return Appearance.getColorScheme() === "light" ? "light" : "dark";
+}
+
 export function ThemeProvider({ children }: ProviderProps) {
+  const scheme = useColorScheme();
   const [override, setOverrideState] = useState<Override>(null);
-  const [auto, setAuto] = useState<ThemeMode>(autoFromHour());
 
   useEffect(() => {
     let cancelled = false;
@@ -41,17 +48,13 @@ export function ThemeProvider({ children }: ProviderProps) {
     };
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(() => setAuto(autoFromHour()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-
   const setOverride = useCallback((next: Override) => {
     setOverrideState(next);
     if (next == null) AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
     else AsyncStorage.setItem(STORAGE_KEY, next).catch(() => {});
   }, []);
 
+  const auto: ThemeMode = scheme === "light" ? "light" : "dark";
   const theme: ThemeMode = override ?? auto;
 
   const toggle = useCallback(() => {
@@ -70,7 +73,7 @@ export function useTheme(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
     return {
-      theme: autoFromHour(),
+      theme: systemMode(),
       override: null,
       setOverride: () => {},
       toggle: () => {},

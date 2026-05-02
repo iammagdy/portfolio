@@ -1,8 +1,14 @@
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Divider from "@/components/ui/Divider";
-import Screen from "@/components/ui/Screen";
 import Txt from "@/components/ui/Text";
 import TopBar from "@/components/TopBar";
 import ProjectSheet from "@/components/sheets/ProjectSheet";
@@ -12,28 +18,56 @@ import { useColors } from "@/hooks/useColors";
 
 export default function ProjectsRoute() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const [active, setActive] = useState<number | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [version, setVersion] = useState(0);
 
   const open = (i: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setActive(i);
   };
 
+  const onRefresh = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    setRefreshing(true);
+    setTimeout(() => {
+      setVersion((v) => v + 1);
+      setRefreshing(false);
+    }, 700);
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <TopBar label="WORK · 2024 — 2026" />
-      <Screen>
+      <TopBar label="PROJECTS · 2024 — 2026" />
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.background }}
+        contentContainerStyle={{
+          paddingHorizontal: 28,
+          paddingTop: space.xl,
+          paddingBottom: insets.bottom + 96,
+        }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.muted}
+            colors={[colors.accent]}
+          />
+        }
+      >
         <Txt variant="eyebrow" color="muted">
-          Selected projects
+          Selected work · {PROJECTS.length}
         </Txt>
         <Txt variant="headline" style={{ marginTop: space.sm }}>
           Things I have built.
         </Txt>
         <Txt variant="body" color="muted" style={{ marginTop: space.md }}>
-          Tap any project for the full story.
+          Pull down to refresh. Tap any row to open.
         </Txt>
 
-        <View style={{ marginTop: space.xl }}>
+        <View style={{ marginTop: space.xl }} key={version}>
           {PROJECTS.map((p, i) => (
             <View key={p.title}>
               <Pressable
@@ -60,7 +94,7 @@ export default function ProjectsRoute() {
                       ]}
                     />
                     <Txt variant="meta" color="muted" style={styles.meta}>
-                      {p.date}
+                      {p.date} · {p.role}
                     </Txt>
                   </View>
                 </View>
@@ -76,7 +110,7 @@ export default function ProjectsRoute() {
             </View>
           ))}
         </View>
-      </Screen>
+      </ScrollView>
 
       <ProjectSheet
         project={active != null ? PROJECTS[active] : null}

@@ -8,9 +8,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -29,16 +36,32 @@ function RootLayoutNav() {
   const colors = useColors();
   const [introDone, setIntroDone] = useState(introShownThisRuntime);
 
+  const fade = useSharedValue(1);
+  const lastTheme = useRef(theme);
+  useEffect(() => {
+    if (lastTheme.current !== theme) {
+      lastTheme.current = theme;
+      fade.value = withSequence(
+        withTiming(0, { duration: 120, easing: Easing.out(Easing.cubic) }),
+        withTiming(1, { duration: 250, easing: Easing.out(Easing.cubic) }),
+      );
+    }
+  }, [theme, fade]);
+
+  const fadeStyle = useAnimatedStyle(() => ({ opacity: fade.value }));
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar style={theme === "dark" ? "light" : "dark"} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-          animation: "fade",
-        }}
-      />
+      <Animated.View style={[{ flex: 1 }, fadeStyle]}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+            animation: "fade",
+          }}
+        />
+      </Animated.View>
       {!introDone ? (
         <IntroOverlay
           onDone={() => {
