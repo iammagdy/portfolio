@@ -1,46 +1,16 @@
 {
-  "name": "portfolio",
-  "version": "0.1.0",
-  "private": true,
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "prepare": "husky",
-    "lint": "next lint"
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
-  "dependencies": {
-    "@gsap/react": "^2.1.2",
-    "@next/third-parties": "^15.3.1",
-    "@react-three/drei": "^10.0.3",
-    "@react-three/fiber": "^9.0.4",
-    "@types/three": "^0.173.0",
-    "gsap": "^3.12.7",
-    "next": "16.2.3",
-    "react": "^19.0.0",
-    "react-device-detect": "^2.2.3",
-    "react-dom": "^19.0.0",
-    "three": "^0.173.0",
-    "uuid": "^11.1.0",
-    "zustand": "^5.0.3"
-  },
+  "private": true,
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.6",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.5.1",
-    "postcss": "^8",
-    "r3f-perf": "^7.2.3",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
-    ]
+    "typescript": "~5.9.2",
+    "prettier": "^3.8.1"
   }
 }
