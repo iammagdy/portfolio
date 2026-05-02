@@ -185,21 +185,57 @@ const Timeline = ({ progress }: { progress: number }) => {
           const diff = Math.min(Math.abs(i - activeIndex), 1);
           return <TimelinePoint point={point} key={i} diff={diff} />;
         })}
-        {activeIndex >= educationStartIndex - 1.2 && (
-          <Text
-            font="./soria-font.ttf"
-            color="white"
-            anchorX="center"
-            textAlign="center"
-            fontSize={0.5}
-            position={[0, 0.6, educationMarkerZ]}
-            renderOrder={12}
-            onSync={onTextSync}
-            fillOpacity={Math.min(1, Math.max(0, 1 - Math.abs(activeIndex - (educationStartIndex - 0.5))))}
-          >
-            EDUCATION
-          </Text>
-        )}
+        {activeIndex >= educationStartIndex - 1.5 && (() => {
+          const markerOpacity = Math.min(
+            1,
+            Math.max(0, 1 - Math.abs(activeIndex - (educationStartIndex - 0.5)) * 0.9),
+          );
+          return (
+            <group position={[0, 0.7, educationMarkerZ]}>
+              <Line
+                points={[
+                  new THREE.Vector3(-2.4, 0.85, 0),
+                  new THREE.Vector3(2.4, 0.85, 0),
+                ]}
+                color="white"
+                lineWidth={1.2}
+                transparent
+                opacity={markerOpacity * 0.7}
+                depthTest={false}
+                depthWrite={false}
+                renderOrder={11}
+              />
+              <Text
+                font="./soria-font.ttf"
+                color="white"
+                anchorX="center"
+                anchorY="middle"
+                textAlign="center"
+                fontSize={1.0}
+                letterSpacing={0.18}
+                position={[0, 0, 0]}
+                renderOrder={12}
+                onSync={onTextSync}
+                fillOpacity={markerOpacity}
+              >
+                EDUCATION
+              </Text>
+              <Line
+                points={[
+                  new THREE.Vector3(-2.4, -0.75, 0),
+                  new THREE.Vector3(2.4, -0.75, 0),
+                ]}
+                color="white"
+                lineWidth={1.2}
+                transparent
+                opacity={markerOpacity * 0.7}
+                depthTest={false}
+                depthWrite={false}
+                renderOrder={11}
+              />
+            </group>
+          );
+        })()}
       </group>
     </group>
   );
