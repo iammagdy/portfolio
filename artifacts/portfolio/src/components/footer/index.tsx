@@ -139,11 +139,27 @@ const Footer = () => {
     });
   };
 
+  const versionLabel = `v${__APP_VERSION__} · ${__APP_COMMIT__}`;
+  const versionFontSize = isMobile ? 0.06 : 0.08;
+  const versionOffsetY = isMobile ? -0.55 : -0.5;
+
   return (
     <group position={[0, -44, 18]} rotation={[-Math.PI / 2, 0, 0]} ref={groupRef}>
       <group position={[centerOffset, 0, 0]}>
         { getLinks() }
       </group>
+      <Text
+        font="./Vercetti-Regular.woff"
+        fontSize={versionFontSize}
+        color="white"
+        position={[0, versionOffsetY, 0]}
+        anchorX="center"
+        anchorY="middle"
+        fillOpacity={0.45}
+        letterSpacing={0.12}
+      >
+        {versionLabel}
+      </Text>
     </group>
   );
 };

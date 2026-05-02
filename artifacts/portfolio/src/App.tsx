@@ -3,7 +3,6 @@ import MobileProjectsOverlay from "./components/common/MobileProjectsOverlay";
 import MobileWorkOverlay from "./components/common/MobileWorkOverlay";
 import MotionPermissionPrompt from "./components/common/MotionPermissionPrompt";
 import ScrollWrapper from "./components/common/ScrollWrapper";
-import VersionBadge from "./components/common/VersionBadge";
 import Experience from "./components/experience";
 import Footer from "./components/footer";
 import Hero from "./components/hero";
@@ -21,7 +20,6 @@ const Home = () => {
       <MotionPermissionPrompt />
       <MobileProjectsOverlay />
       <MobileWorkOverlay />
-      <VersionBadge />
     </>
   );
 };
