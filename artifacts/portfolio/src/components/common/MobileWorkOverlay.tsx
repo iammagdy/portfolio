@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { WORK_TIMELINE } from "@constants";
 import { usePortalStore } from "@stores";
@@ -13,11 +13,6 @@ const MobileWorkOverlay = () => {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
-
-  const entriesNewestFirst = useMemo(
-    () => [...WORK_TIMELINE].reverse(),
-    [],
-  );
 
   if (!isMobile || !isActive) return null;
 
@@ -40,7 +35,7 @@ const MobileWorkOverlay = () => {
           />
 
           <ol className="flex flex-col gap-3">
-            {entriesNewestFirst.map((entry, i) => (
+            {WORK_TIMELINE.map((entry, i) => (
               <li
                 key={`${entry.year}-${i}`}
                 className="relative pl-10"
