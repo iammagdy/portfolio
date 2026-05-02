@@ -10,7 +10,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import SafeCanvas from "@/three/SafeCanvas";
-import FloatingFrame from "@/three/FloatingFrame";
+import WindowModel from "@/three/WindowModel";
+import Clouds from "@/three/Clouds";
 import Stars from "@/three/Stars";
 import SceneLights from "@/three/SceneLights";
 import { useColors } from "@/hooks/useColors";
@@ -68,7 +69,8 @@ export default function IntroScene() {
       >
         <SceneLights />
         {theme === "dark" && <Stars count={500} radius={50} />}
-        <FloatingFrame accent={accent} base={theme === "dark" ? "#ededed" : "#0a0a0a"} />
+        <Clouds count={6} color={theme === "dark" ? "#9ec5e8" : "#ffffff"} />
+        <WindowModel accent={accent} base={theme === "dark" ? "#ededed" : "#0a0a0a"} />
       </SafeCanvas>
 
       <View style={styles.overlay} pointerEvents="box-none">
@@ -113,9 +115,6 @@ export default function IntroScene() {
               </Text>
             </Pressable>
           </Animated.View>
-          <Text style={[styles.swipe, { color: colors.foreground, opacity: 0.5 }]}>
-            swipe →
-          </Text>
         </View>
       </View>
     </View>
@@ -144,5 +143,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   ctaText: { fontSize: 12, letterSpacing: 2 },
-  swipe: { fontSize: 11, letterSpacing: 3, marginLeft: 4 },
 });

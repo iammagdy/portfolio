@@ -1,7 +1,29 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Platform } from "react-native";
 import * as THREE from "three";
 import { useFrame } from "./Canvas";
 import type { Project } from "@/constants/data";
+
+function useImageTexture(uri?: string): THREE.Texture | null {
+  const [tex, setTex] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    if (!uri || Platform.OS === "web") return;
+    let cancelled = false;
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      uri,
+      (t) => {
+        if (!cancelled) setTex(t);
+      },
+      undefined,
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+  return tex;
+}
 
 interface OrbitingCardsProps {
   projects: Project[];
@@ -37,6 +59,7 @@ export default function OrbitingCards({
             position={[x, y, z]}
             rotationY={-angle + Math.PI / 2}
             color={p.color ?? "#0690d4"}
+            image={p.image}
             onPress={() => onSelect(i)}
           />
         );
@@ -49,11 +72,13 @@ interface CardProps {
   position: [number, number, number];
   rotationY: number;
   color: string;
+  image?: string;
   onPress: () => void;
 }
 
-function Card({ position, rotationY, color, onPress }: CardProps) {
+function Card({ position, rotationY, color, image, onPress }: CardProps) {
   const ref = useRef<THREE.Mesh>(null);
+  const tex = useImageTexture(image);
 
   useFrame(() => {
     if (ref.current) {
@@ -71,14 +96,23 @@ function Card({ position, rotationY, color, onPress }: CardProps) {
         }}
       >
         <planeGeometry args={[1.4, 2]} />
-        <meshStandardMaterial
-          color={color}
-          metalness={0.3}
-          roughness={0.4}
-          emissive={color}
-          emissiveIntensity={0.45}
-          side={THREE.DoubleSide}
-        />
+        {tex ? (
+          <meshStandardMaterial
+            map={tex}
+            metalness={0.1}
+            roughness={0.6}
+            side={THREE.DoubleSide}
+          />
+        ) : (
+          <meshStandardMaterial
+            color={color}
+            metalness={0.3}
+            roughness={0.4}
+            emissive={color}
+            emissiveIntensity={0.45}
+            side={THREE.DoubleSide}
+          />
+        )}
       </mesh>
       <mesh position={[0, -0.85, 0.01]}>
         <planeGeometry args={[1.2, 0.06]} />

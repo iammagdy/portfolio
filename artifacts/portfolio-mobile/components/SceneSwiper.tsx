@@ -59,12 +59,41 @@ export default function SceneSwiper() {
         style={styles.scroll}
         testID="scene-swiper"
       >
-        {SCENES.map(({ key, Component }) => (
-          <View key={key} style={[styles.page, { width: W }]}>
-            <Component />
-          </View>
-        ))}
+        {SCENES.map(({ key, Component }, i) => {
+          const active = Math.abs(i - page) <= 1;
+          return (
+            <View key={key} style={[styles.page, { width: W }]}>
+              {active ? <Component /> : null}
+            </View>
+          );
+        })}
       </ScrollView>
+
+      {page < SCENES.length - 1 ? (
+        <View
+          style={[styles.bottomHint, { paddingBottom: insets.bottom + 14 }]}
+          pointerEvents="none"
+        >
+          <View
+            style={[
+              styles.hintChip,
+              {
+                borderColor: colors.foreground + "33",
+                backgroundColor: colors.background + "cc",
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.hintText,
+                { color: colors.foreground, opacity: 0.7 },
+              ]}
+            >
+              swipe to explore  →
+            </Text>
+          </View>
+        </View>
+      ) : null}
 
       <View
         style={[styles.topBar, { paddingTop: insets.top + 10 }]}
@@ -143,4 +172,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  bottomHint: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+  },
+  hintChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  hintText: { fontSize: 10, letterSpacing: 2.5 },
 });

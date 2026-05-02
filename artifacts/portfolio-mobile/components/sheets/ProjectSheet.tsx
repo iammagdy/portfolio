@@ -1,6 +1,8 @@
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
@@ -65,12 +67,7 @@ export default function ProjectSheet({ project, onClose }: Props) {
         <View style={styles.handle} />
         {project ? (
           <View style={styles.body}>
-            <View
-              style={[
-                styles.cover,
-                { backgroundColor: project.color ?? "#0690d4" },
-              ]}
-            />
+            <ProjectCover project={project} />
             <Text style={[styles.title, { color: colors.foreground, fontFamily: "Soria" }]}>
               {project.title}
             </Text>
@@ -126,6 +123,45 @@ export default function ProjectSheet({ project, onClose }: Props) {
       </Animated.View>
     </View>
   );
+}
+
+function ProjectCover({ project }: { project: Project }) {
+  const gradient = useMemo<[string, string]>(() => {
+    const c = project.color ?? "#0690d4";
+    return [c, shade(c, -40)];
+  }, [project.color]);
+
+  if (project.image) {
+    return (
+      <Image
+        source={{ uri: project.image }}
+        style={styles.cover}
+        contentFit="cover"
+        transition={200}
+        accessibilityIgnoresInvertColors
+      />
+    );
+  }
+  return (
+    <LinearGradient
+      colors={gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.cover}
+    />
+  );
+}
+
+function shade(hex: string, amount: number): string {
+  const h = hex.replace("#", "");
+  const num = parseInt(h, 16);
+  let r = (num >> 16) + amount;
+  let g = ((num >> 8) & 0xff) + amount;
+  let b = (num & 0xff) + amount;
+  r = Math.max(0, Math.min(255, r));
+  g = Math.max(0, Math.min(255, g));
+  b = Math.max(0, Math.min(255, b));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
 const styles = StyleSheet.create({
