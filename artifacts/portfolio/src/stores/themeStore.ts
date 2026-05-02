@@ -55,7 +55,17 @@ export const useThemeStore = create<ThemeStore>()(
       name: "theme-storage",
       partialize: (state) => ({ theme: state.theme, userOverride: state.userOverride }),
       onRehydrateStorage: () => (state) => {
-        if (state?.theme) syncDocumentTheme(state.theme);
+        if (!state) return;
+        if (state.userOverride && state.theme) {
+          // Visitor explicitly chose a theme — honor it across visits.
+          syncDocumentTheme(state.theme);
+          return;
+        }
+        // No user override: the inline script in index.html already set
+        // data-theme based on local time. Mirror that into the store so
+        // the toggle starts from the actual rendered theme, not stale state.
+        const current = getInitialTheme();
+        state.theme = current;
       },
     }
   )
