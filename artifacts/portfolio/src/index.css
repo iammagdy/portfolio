@@ -18,14 +18,16 @@
 }
 
 :root {
-  --background: #ffffff;
+  /* Match the 3D scene background color so the page never flashes a
+     mismatched color through during loading or canvas resize. */
+  --background: #0690d4;
   --foreground: #171717;
   --font-soria: 'Soria';
   --font-vercetti: 'Vercetti';
 }
 
 html[data-theme="dark"] {
-  --background: #0a0a0a;
+  --background: #111;
   --foreground: #ededed;
 }
 
