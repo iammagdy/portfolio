@@ -1,33 +1,45 @@
 import { useState } from 'react';
 
 const VersionBadge = () => {
+  const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const version = `v${__APP_VERSION__}`;
   const commit = __APP_COMMIT__;
   const buildDate = __APP_BUILD_DATE__;
 
+  const visibleOpacity = expanded ? 0.7 : hovered ? 0.4 : 0.18;
+
   return (
-    <button
-      type="button"
-      onClick={() => setExpanded((v) => !v)}
-      className="fixed bottom-2 right-2 z-50 font-sans text-white pointer-events-auto select-none transition-opacity duration-300 hover:opacity-90"
+    <div
+      className="fixed bottom-2 right-3 z-50 pointer-events-none select-none"
       style={{
-        fontSize: '0.6rem',
-        opacity: expanded ? 0.85 : 0.35,
-        background: 'rgba(0,0,0,0.35)',
-        backdropFilter: 'blur(4px)',
-        padding: '2px 6px',
-        borderRadius: '3px',
-        letterSpacing: '0.05em',
-        border: 'none',
-        cursor: 'pointer',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+        fontSize: '0.55rem',
+        letterSpacing: '0.08em',
+        color: 'white',
+        textShadow: '0 0 2px rgba(0,0,0,0.6)',
+        mixBlendMode: 'difference',
       }}
-      aria-label={`Version ${version}, commit ${commit}, built ${buildDate}`}
-      title={`Build ${commit} • ${buildDate}`}
     >
-      {expanded ? `${version} · ${commit} · ${buildDate}` : version}
-    </button>
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="pointer-events-auto bg-transparent border-0 p-0 m-0 cursor-pointer transition-opacity duration-300"
+        style={{
+          opacity: visibleOpacity,
+          color: 'inherit',
+          font: 'inherit',
+          letterSpacing: 'inherit',
+        }}
+        aria-label={`Version ${version}, commit ${commit}, built ${buildDate}`}
+        title={`${version} · ${commit} · ${buildDate}`}
+      >
+        {expanded ? `${version} · ${commit} · ${buildDate}` : version}
+      </button>
+    </div>
   );
 };
 
