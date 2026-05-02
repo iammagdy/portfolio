@@ -11,6 +11,7 @@ export interface Project {
   title: string;
   date: string;
   role: string;
+  tags: string[];
   subtext: string;
   color: string;
   image?: string;
@@ -35,6 +36,7 @@ export const PROJECTS: Project[] = [
     title: "megZone",
     date: "2024-2025",
     role: "Founder & Engineer",
+    tags: ["AI", "Workspace", "SaaS"],
     subtext:
       "A centralized AI workspace that lets you launch and manage multiple AI apps from one streamlined interface.",
     color: "#7c3aed",
@@ -44,6 +46,7 @@ export const PROJECTS: Project[] = [
     title: "Wise Prompt",
     date: "2025",
     role: "Engineer",
+    tags: ["AI", "Prompting", "Vision"],
     subtext:
       "An \"All-in-One\" AI workspace combining advanced prompt engineering, web scraping, and computer vision into a single interface.",
     color: "#14b8a6",
@@ -53,6 +56,7 @@ export const PROJECTS: Project[] = [
     title: "Wise Quran",
     date: "2025-2026",
     role: "Designer & Engineer",
+    tags: ["PWA", "Offline-first", "Audio"],
     subtext:
       "A modern, offline-first Quran Progressive Web App for reading, listening, and daily worship tracking.",
     color: "#059669",
@@ -65,6 +69,7 @@ export const PROJECTS: Project[] = [
     title: "Wise Resume",
     date: "2025-2026",
     role: "Product Engineer",
+    tags: ["AI", "Careers", "ATS"],
     subtext:
       "AI career platform combining a resume builder (30+ templates, ATS scoring) with interview coaching, AI career tools, and an application tracker.",
     color: "#f59e0b",
@@ -77,6 +82,7 @@ export const PROJECTS: Project[] = [
     title: "Portfolio",
     date: "2026",
     role: "Designer & Engineer",
+    tags: ["3D", "GSAP", "Personal"],
     subtext:
       "This very portfolio — a 3D immersive experience built with React Three Fiber, GSAP, and spatial scroll-driven animations.",
     color: "#0ea5e9",
@@ -86,6 +92,7 @@ export const PROJECTS: Project[] = [
     title: "Wise Hire",
     date: "2026",
     role: "Product Engineer",
+    tags: ["HR", "AI", "Enterprise"],
     subtext:
       "An invite-only AI HR SaaS offering AI-written job descriptions, bulk CV screening, Kanban hiring pipeline, and enterprise SSO.",
     color: "#ec4899",
@@ -98,6 +105,7 @@ export const PROJECTS: Project[] = [
     title: "The Wise Cloud",
     date: "2026",
     role: "Founder",
+    tags: ["Platform", "AI", "HR"],
     subtext:
       "A dual-product AI platform serving both job seekers and HR teams from one connected ecosystem.",
     color: "#3b82f6",
@@ -110,6 +118,7 @@ export const PROJECTS: Project[] = [
     title: "Magic Sourcing",
     date: "2026",
     role: "Engineer",
+    tags: ["Chrome", "AI", "Sourcing"],
     subtext:
       "A Chrome extension automating LinkedIn candidate sourcing using Gemini AI — with profile scoring, skill-gap analysis, and outreach generation.",
     color: "#f97316",

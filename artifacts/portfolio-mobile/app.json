@@ -11,16 +11,23 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0a0a0a"
+      "backgroundColor": "#fafaf7",
+      "dark": {
+        "image": "./assets/images/icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#0a0a0a"
+      }
     },
     "ios": {
       "supportsTablet": false,
       "buildNumber": "3"
     },
     "android": {
-      "backgroundColor": "#0a0a0a",
       "package": "com.magdysaber.portfolio",
-      "versionCode": 3
+      "versionCode": 3,
+      "adaptiveIcon": {
+        "backgroundColor": "#fafaf7"
+      }
     },
     "web": {
       "favicon": "./assets/images/icon.png"

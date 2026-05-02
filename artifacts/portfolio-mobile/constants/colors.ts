@@ -16,7 +16,7 @@ const colors = {
     muted: "#7a7a7a",
     subtle: "#ffffff10",
     border: "#ffffff1f",
-    accent: "#e58869",
+    accent: "#0690d4",
     onAccent: "#0a0a0a",
   },
   radius: 12,

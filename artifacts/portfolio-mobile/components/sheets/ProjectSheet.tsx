@@ -123,11 +123,34 @@ export default function ProjectSheet({ project, onClose }: Props) {
                   style={styles.cover}
                 />
                 <Txt variant="eyebrow" color="muted" style={{ marginTop: space.lg }}>
-                  {project.date}
+                  {project.date} · {project.role}
                 </Txt>
                 <Txt variant="headline" style={{ marginTop: space.xs }}>
                   {project.title}
                 </Txt>
+
+                <View style={styles.tags}>
+                  {project.tags.map((t) => (
+                    <View
+                      key={t}
+                      style={[
+                        styles.tag,
+                        {
+                          borderColor: colors.border,
+                          backgroundColor: colors.surface,
+                        },
+                      ]}
+                    >
+                      <Txt
+                        variant="meta"
+                        style={{ color: colors.foreground, letterSpacing: 1 }}
+                      >
+                        {t}
+                      </Txt>
+                    </View>
+                  ))}
+                </View>
+
                 <Txt variant="bodyLg" color="muted" style={{ marginTop: space.md }}>
                   {project.subtext}
                 </Txt>
@@ -189,5 +212,17 @@ const styles = StyleSheet.create({
   },
   body: { paddingHorizontal: 28, paddingBottom: 56 },
   cover: { width: "100%", aspectRatio: 16 / 10, borderRadius: 14, marginTop: space.lg },
+  tags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: space.md,
+  },
+  tag: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
   actions: { gap: 10, marginTop: space.xl },
 });

@@ -24,7 +24,7 @@ This is Magdy Saber's 3D portfolio — a creative frontend showcase using React 
 
 - `artifacts/portfolio` — Main 3D portfolio web app (preview path: `/`, port 21113)
 - `artifacts/api-server` — Express backend (preview path: `/api`, port 8080)
-- `artifacts/portfolio-mobile` — Expo native portfolio (v1.3.0). Editorial / minimal direction; **no 3D** (three / r3f / expo-gl removed in Task #13). Tabs: Home / Projects / Work / Contact via expo-router with a custom text-only tab bar. System theme on launch + animated cross-fade on toggle (`hooks/useAutoTheme.ts`). Cold-start name-drop intro animation (`components/IntroOverlay.tsx`). Native bottom-sheet for project detail. Monochrome palette + warm accent (`#d97757` light, `#e58869` dark) defined in `constants/colors.ts`.
+- `artifacts/portfolio-mobile` — Expo native portfolio (v1.3.0). Editorial / minimal direction; **no 3D** (three / r3f / expo-gl removed in Task #13). Tabs: Home / Projects / Work / Contact via expo-router with a custom text-only tab bar. System theme on launch + animated cross-fade on toggle (`hooks/useAutoTheme.ts`). Cold-start name-drop intro animation (`components/IntroOverlay.tsx`). Native bottom-sheet for project detail. Monochrome palette + accent (`#d97757` warm light, `#0690d4` cool dark) defined in `constants/colors.ts`. Splash has dark/light variants matching theme.
 - `artifacts/portfolio-promo-video` — Promo video artifact.
 - `artifacts/mockup-sandbox` — Canvas / mockup preview server.
 
