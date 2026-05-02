@@ -3,28 +3,28 @@ import { WorkTimelinePoint } from "../types";
 
 export const EDUCATION_TIMELINE: WorkTimelinePoint[] = [
   {
-    point: new THREE.Vector3(-1.5, 0.4, -12.2),
+    point: new THREE.Vector3(-1.5, 0.4, -14.2),
     year: '2017',
     title: 'BA of Arts — Journalism',
     subtitle: 'Media · Zagazig University',
     position: 'left',
   },
   {
-    point: new THREE.Vector3(1.5, 0.6, -13.3),
+    point: new THREE.Vector3(1.5, 0.6, -15.3),
     year: '2021',
     title: 'Data Scientist Diploma',
     subtitle: 'Machinfy',
     position: 'right',
   },
   {
-    point: new THREE.Vector3(-1.5, 0.4, -14.4),
+    point: new THREE.Vector3(-1.5, 0.4, -16.4),
     year: '2024',
     title: 'Software Engineering',
     subtitle: 'Cairo University',
     position: 'left',
   },
   {
-    point: new THREE.Vector3(1.5, 0.5, -15.5),
+    point: new THREE.Vector3(1.5, 0.5, -17.5),
     year: '2026',
     title: 'Human Resources',
     subtitle: 'Arab Academy for Science & Technology (AAST)',
