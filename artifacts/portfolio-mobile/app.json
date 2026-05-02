@@ -17,7 +17,8 @@
       "supportsTablet": false
     },
     "android": {
-      "backgroundColor": "#0a0a0a"
+      "backgroundColor": "#0a0a0a",
+      "package": "com.magdysaber.portfolio"
     },
     "web": {
       "favicon": "./assets/images/icon.png"
