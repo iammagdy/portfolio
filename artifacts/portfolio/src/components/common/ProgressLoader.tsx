@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { MOBILE_BREAKPOINT } from '../../hooks/useBreakpoint';
 
 const ProgressLoader = ({ progress }: { progress: number }) => {
   const strokeWidth = 3;
@@ -52,7 +53,7 @@ const ProgressLoader = ({ progress }: { progress: number }) => {
       return null; // Or return a minimal placeholder
   }
 
-  const isMobile = windowSize.width < 768;
+  const isMobile = windowSize.width < MOBILE_BREAKPOINT;
   if (isMobile) {
     return (
       <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none">
