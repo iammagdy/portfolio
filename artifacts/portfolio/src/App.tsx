@@ -1,5 +1,6 @@
 import CanvasLoader from "./components/common/CanvasLoader";
 import MobileProjectsOverlay from "./components/common/MobileProjectsOverlay";
+import MobileWorkOverlay from "./components/common/MobileWorkOverlay";
 import MotionPermissionPrompt from "./components/common/MotionPermissionPrompt";
 import ScrollWrapper from "./components/common/ScrollWrapper";
 import Experience from "./components/experience";
@@ -18,6 +19,7 @@ const Home = () => {
       </CanvasLoader>
       <MotionPermissionPrompt />
       <MobileProjectsOverlay />
+      <MobileWorkOverlay />
     </>
   );
 };
