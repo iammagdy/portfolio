@@ -33,6 +33,7 @@ export default function SceneSwiper() {
   const { theme, toggle } = useTheme();
   const insets = useSafeAreaInsets();
   const [page, setPage] = useState(0);
+  const [scrolling, setScrolling] = useState(false);
   const ref = useRef<ScrollView>(null);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -42,6 +43,8 @@ export default function SceneSwiper() {
       Haptics.selectionAsync().catch(() => {});
     }
   };
+  const onScrollBegin = () => setScrolling(true);
+  const onScrollEnd = () => setScrolling(false);
 
   const goTo = (i: number) => {
     ref.current?.scrollTo({ x: i * W, animated: true });
@@ -55,12 +58,15 @@ export default function SceneSwiper() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
+        onScrollBeginDrag={onScrollBegin}
+        onMomentumScrollEnd={onScrollEnd}
+        onScrollEndDrag={onScrollEnd}
         scrollEventThrottle={16}
         style={styles.scroll}
         testID="scene-swiper"
       >
         {SCENES.map(({ key, Component }, i) => {
-          const active = Math.abs(i - page) <= 1;
+          const active = i === page || (scrolling && Math.abs(i - page) === 1);
           return (
             <View key={key} style={[styles.page, { width: W }]}>
               {active ? <Component /> : null}
