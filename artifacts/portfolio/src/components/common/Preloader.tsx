@@ -1,25 +1,7 @@
-import { useState } from 'react'
-import WindowModel from '../models/WindowModel'
-
-const HERO_MODELS = [WindowModel];
-
-// The hero <WindowModel/> is mounted eagerly above so its GLB starts
-// downloading during the initial paint. Memory + Wanderer are mounted
-// eagerly inside their portal scenes (Work/Projects) on desktop, so they
-// also load up-front from the same Canvas — no separate preload pass is
-// needed and the previous deferred useGLTF.preload calls were just
-// duplicating work the renderer was already doing.
-
-const Preloader = () => {
-  const [visible] = useState(true);
-
-  return (
-    <>
-      {HERO_MODELS.map((Component, index) => (
-        <Component key={index} visible={visible} />
-      ))}
-    </>
-  );
-};
+// The hero <WindowModel/> is rendered directly by <Hero/>, and the
+// model module already calls useGLTF.preload at import time, so no
+// extra preload pass is needed here. Component kept as a no-op to
+// preserve the existing CanvasLoader import surface.
+const Preloader = () => null;
 
 export default Preloader;

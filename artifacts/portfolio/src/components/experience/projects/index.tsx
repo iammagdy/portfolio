@@ -1,12 +1,13 @@
 import { useScroll, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import gsap from "gsap";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import * as THREE from "three";
 import { usePortalStore } from "@stores";
 import { Wanderer } from "../../models/Wanderer";
 import ProjectsCarousel from "./ProjectsCarousel";
 import { MOBILE_BREAKPOINT } from "../../../hooks/useBreakpoint";
+import { useScrollNear } from "../../../hooks/useScrollNear";
 
 const WandererTile = () => {
   const texture = useTexture('/images/wanderer-tile.png');
@@ -23,6 +24,8 @@ const Projects = () => {
   const isMobile = size.width < MOBILE_BREAKPOINT;
   const isActive = usePortalStore((state) => state.activePortalId === "projects");
   const data = useScroll();
+  const inRange = useScrollNear(0.4);
+  const shouldRenderModel = inRange || isActive;
 
   useEffect(() => {
     // Hide scrollbar when active.
@@ -53,11 +56,15 @@ const Projects = () => {
         <WandererTile />
       ) : (
         <>
-          <Wanderer
-            rotation={new THREE.Euler(0, Math.PI / 6, 0)}
-            scale={new THREE.Vector3(1.5, 1.5, 1.5)}
-            position={new THREE.Vector3(0, -1, -1)}
-          />
+          {shouldRenderModel ? (
+            <Suspense fallback={null}>
+              <Wanderer
+                rotation={new THREE.Euler(0, Math.PI / 6, 0)}
+                scale={new THREE.Vector3(1.5, 1.5, 1.5)}
+                position={new THREE.Vector3(0, -1, -1)}
+              />
+            </Suspense>
+          ) : null}
           <ProjectsCarousel />
         </>
       )}

@@ -76,13 +76,9 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
           gl={{ antialias: true, toneMappingExposure: 1.05 }}
           dpr={[1, 2]}>
           <Suspense fallback={null}>
-            {/* Soft IBL so MeshPhysicalMaterial surfaces (the window frame
-                and glass handle) pick up subtle reflections and warmth. */}
+            {/* Soft IBL for the window's physical material. */}
             <Environment preset="sunset" environmentIntensity={0.45} background={false} />
             <ambientLight intensity={0.55} />
-            {/* Cool global rim from camera-side so silhouettes pop against
-                the saturated background; subtle so it doesn't compete with
-                scene-local lights. */}
             <directionalLight position={[-6, 4, 8]} intensity={0.35} color={'#cfe6ff'} />
 
             <ScrollControls pages={4} damping={0.4} maxSpeed={1} distance={1} style={{ zIndex: 1 }}>
@@ -92,10 +88,6 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
           </Suspense>
           <AdaptiveDpr pixelated/>
         </Canvas>
-        {/* Film-grain overlay rendered above the canvas so it's actually
-            visible (the previous backgroundBlendMode trick was hidden by
-            the opaque WebGL canvas). pointer-events:none keeps it from
-            stealing clicks. */}
         <div
           aria-hidden="true"
           className="grain-overlay"

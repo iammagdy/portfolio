@@ -3,7 +3,7 @@ import { Edges, MeshPortalMaterial, Text, TextProps, useScroll } from '@react-th
 import { useFrame, useThree } from '@react-three/fiber';
 import { usePortalStore } from '@stores';
 import gsap from "gsap";
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { MOBILE_BREAKPOINT } from '../../hooks/useBreakpoint';
 
@@ -23,8 +23,14 @@ const GridTile = (props: GridTileProps) => {
   const hoverBoxRef = useRef<THREE.Mesh>(null);
   const portalRef = useRef(null);
   const { title, textAlign, children, color, position, id } = props;
-  const { camera, size } = useThree();
+  const { camera, size, gl } = useThree();
   const isMobile = size.width < MOBILE_BREAKPOINT;
+  // Scale portal FBO with the device pixel ratio so retina displays get
+  // crisp portal scenes; capped to 2048 to keep memory in check.
+  const portalResolution = useMemo(() => {
+    const dpr = typeof gl?.getPixelRatio === 'function' ? gl.getPixelRatio() : 1;
+    return Math.min(2048, Math.round(1024 * Math.max(1, dpr)));
+  }, [gl]);
   const setActivePortal = usePortalStore((state) => state.setActivePortal);
   const isActive = usePortalStore((state) => state.activePortalId === id);
   const activePortalId = usePortalStore((state) => state.activePortalId);
@@ -63,10 +69,8 @@ const GridTile = (props: GridTileProps) => {
     setActivePortal(id);
   };
 
-  // Drive portal entry/exit animations off the store state instead of
-  // imperative side effects. This makes Esc, the close button, and clicks
-  // all converge on the same code path and removes the stray DOM button
-  // that used to be injected into document.body.
+  // Portal entry/exit driven by store state so click, Esc, and the
+  // PortalCloseButton all share one code path.
   const wasActiveRef = useRef(false);
   useEffect(() => {
     if (isActive) {
@@ -75,8 +79,6 @@ const GridTile = (props: GridTileProps) => {
       gsap.to(portalRef.current, { blend: 1, duration: 0.5 });
       return;
     }
-    // Skip the initial inactive→inactive render; only run exit cleanup
-    // if this tile was previously active.
     if (!wasActiveRef.current) return;
     wasActiveRef.current = false;
     if (portalRef.current) {
@@ -150,7 +152,7 @@ const GridTile = (props: GridTileProps) => {
           {title}
         </Text>
       </group>
-      <MeshPortalMaterial ref={portalRef} blend={0} resolution={1024} blur={0}>
+      <MeshPortalMaterial ref={portalRef} blend={0} resolution={portalResolution} blur={0}>
         <color attach="background" args={[color]} />
         {children}
       </MeshPortalMaterial>
