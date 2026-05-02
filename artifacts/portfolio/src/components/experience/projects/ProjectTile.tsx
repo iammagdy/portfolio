@@ -84,11 +84,18 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     }
   }, [hovered, buttons]);
 
+  // A tile is "expanded" if it's the actively-selected one (click-locked on
+  // desktop, tap-selected on mobile) or, on desktop only, when no tile is
+  // selected and the pointer is hovering it. The pointer handlers below
+  // cooperate with this effect so a clicked tile stays expanded even when
+  // the pointer leaves, and another tile being clicked collapses it.
   useEffect(() => {
-    if (isMobile) {
+    if (activeId !== null) {
       setHovered(activeId === index);
+    } else if (isMobile) {
+      setHovered(false);
     }
-  }, [isMobile, activeId]);
+  }, [isMobile, activeId, index]);
 
   useEffect(() => {
     if (projectRef.current) {
@@ -114,8 +121,18 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
       position={position}
       rotation={rotation}
       onClick={onClick}
-      onPointerOver={() => !isMobile && isProjectSectionActive && setHovered(true)}
-      onPointerOut={() => !isMobile && isProjectSectionActive && setHovered(false)}>
+      onPointerOver={() => {
+        if (isMobile || !isProjectSectionActive) return;
+        // If a different tile is locked, don't react to hover.
+        if (activeId !== null && activeId !== index) return;
+        setHovered(true);
+      }}
+      onPointerOut={() => {
+        if (isMobile || !isProjectSectionActive) return;
+        // Don't collapse a tile that the visitor explicitly clicked.
+        if (activeId === index) return;
+        setHovered(false);
+      }}>
       <group ref={projectRef}>
         <mesh>
           <planeGeometry args={[4.2, 2, 1]} />
