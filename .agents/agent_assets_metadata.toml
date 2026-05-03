@@ -29,3 +29,9 @@ id = "kzDjVv1HBJij56tKpIOy0"
 uri = "file://.local/hostinger-deploy/magdysaber-api-deploy.tar.gz"
 type = "unspecified"
 title = "magdysaber-api-deploy.tar.gz (the brain to upload)"
+
+[[outputs]]
+id = "GYuBWWkVOQ-Dtlwk7Had4"
+uri = "file://.local/hostinger-deploy/api-server.env.txt"
+type = "text"
+title = "api-server.env (rename to .env after editing the 2 CHANGE_ME values)"
