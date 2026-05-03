@@ -14,7 +14,7 @@ export const getCountry = async (ip: string | null): Promise<string | null> => {
 
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 250);
+    const timer = setTimeout(() => ctrl.abort(), 200);
     const resp = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/country/`, { signal: ctrl.signal });
     clearTimeout(timer);
     if (!resp.ok) {

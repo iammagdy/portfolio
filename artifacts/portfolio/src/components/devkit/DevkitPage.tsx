@@ -43,16 +43,16 @@ const fmtMs = (ms: unknown) => {
 };
 
 const Card = ({ title, value, sub }: { title: string; value: string; sub?: string }) => (
-  <div className="bg-white border border-black rounded-sm p-4">
-    <div className="font-vercetti text-[10px] tracking-widest uppercase text-black/50">{title}</div>
-    <div className="font-soria text-3xl mt-1 text-black">{value}</div>
-    {sub && <div className="font-vercetti text-[10px] text-black/50 mt-1">{sub}</div>}
+  <div className="bg-neutral-900 border border-neutral-700 rounded-sm p-4">
+    <div className="font-vercetti text-[10px] tracking-widest uppercase text-neutral-400">{title}</div>
+    <div className="font-soria text-3xl mt-1 text-white">{value}</div>
+    {sub && <div className="font-vercetti text-[10px] text-neutral-400 mt-1">{sub}</div>}
   </div>
 );
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="bg-white border border-black rounded-sm p-4">
-    <div className="font-vercetti text-xs tracking-widest uppercase text-black mb-3">{title}</div>
+  <div className="bg-neutral-900 border border-neutral-700 rounded-sm p-4">
+    <div className="font-vercetti text-xs tracking-widest uppercase text-neutral-200 mb-3">{title}</div>
     {children}
   </div>
 );
@@ -129,28 +129,28 @@ const DevkitPage = () => {
   };
 
   if (authed === null) {
-    return <div className="min-h-screen flex items-center justify-center font-vercetti text-black/60">Loading…</div>;
+    return <div className="min-h-screen bg-black flex items-center justify-center font-vercetti text-neutral-400">Loading…</div>;
   }
 
   if (!authed) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <form onSubmit={onLogin} className="w-full max-w-sm bg-white border border-black rounded-sm p-6 space-y-4">
-          <h1 className="font-soria text-3xl text-black">Devkit</h1>
-          <p className="font-vercetti text-xs text-black/60">Owner-only analytics. Enter password to continue.</p>
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <form onSubmit={onLogin} className="w-full max-w-sm bg-neutral-900 border border-neutral-700 rounded-sm p-6 space-y-4">
+          <h1 className="font-soria text-3xl text-white">Devkit</h1>
+          <p className="font-vercetti text-xs text-neutral-400">Owner-only analytics. Enter password to continue.</p>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
             autoFocus
-            className="w-full border border-black/40 px-3 py-2 font-vercetti text-sm focus:outline-none focus:border-black"
+            className="w-full bg-black border border-neutral-700 text-white px-3 py-2 font-vercetti text-sm focus:outline-none focus:border-white"
           />
-          {loginErr && <div className="font-vercetti text-xs text-red-600">{loginErr}</div>}
+          {loginErr && <div className="font-vercetti text-xs text-red-400">{loginErr}</div>}
           <button
             type="submit"
             disabled={loggingIn || !password}
-            className="w-full bg-black text-white font-vercetti text-xs tracking-widest uppercase py-2 disabled:opacity-50"
+            className="w-full bg-white text-black font-vercetti text-xs tracking-widest uppercase py-2 disabled:opacity-50"
           >
             {loggingIn ? "Signing in…" : "Sign in"}
           </button>
@@ -167,17 +167,17 @@ const DevkitPage = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 sm:px-8 py-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white px-4 sm:px-8 py-8 max-w-7xl mx-auto">
       <header className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="font-soria text-4xl text-black">Devkit</h1>
-          <p className="font-vercetti text-xs text-black/60 mt-1">Portfolio analytics — last {days} days</p>
+          <h1 className="font-soria text-4xl text-white">Devkit</h1>
+          <p className="font-vercetti text-xs text-neutral-400 mt-1">Portfolio analytics — last {days} days</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="border border-black px-3 py-2 font-vercetti text-xs bg-white"
+            className="border border-neutral-700 px-3 py-2 font-vercetti text-xs bg-neutral-900 text-white"
           >
             <option value={1}>24 hours</option>
             <option value={7}>7 days</option>
@@ -186,19 +186,19 @@ const DevkitPage = () => {
           </select>
           <button
             onClick={() => loadStats(days)}
-            className="border border-black px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-black hover:text-white transition"
+            className="border border-neutral-700 text-white px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-white hover:text-black transition"
           >
             Refresh
           </button>
           <button
             onClick={downloadCsv}
-            className="border border-black px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-black hover:text-white transition"
+            className="border border-neutral-700 text-white px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-white hover:text-black transition"
           >
             Download CSV
           </button>
           <button
             onClick={onLogout}
-            className="border border-black px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-black hover:text-white transition"
+            className="border border-neutral-700 text-white px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-white hover:text-black transition"
           >
             Logout
           </button>
@@ -206,12 +206,12 @@ const DevkitPage = () => {
       </header>
 
       {statsErr && (
-        <div className="border border-red-600 bg-red-50 text-red-800 px-4 py-3 mb-4 font-vercetti text-xs">
+        <div className="border border-red-700 bg-red-950 text-red-300 px-4 py-3 mb-4 font-vercetti text-xs">
           {statsErr}
         </div>
       )}
 
-      {loading && !stats && <div className="font-vercetti text-black/60">Loading…</div>}
+      {loading && !stats && <div className="font-vercetti text-neutral-400">Loading…</div>}
 
       {stats && (
         <div className="space-y-6">
@@ -231,12 +231,12 @@ const DevkitPage = () => {
             <div style={{ width: "100%", height: 240 }}>
               <ResponsiveContainer>
                 <LineChart data={stats.daily} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                  <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="pageviews" stroke="#000" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="visitors" stroke="#888" strokeWidth={2} dot={false} />
+                  <CartesianGrid stroke="#262626" strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tick={{ fontSize: 10, fill: "#a3a3a3" }} stroke="#525252" />
+                  <YAxis tick={{ fontSize: 10, fill: "#a3a3a3" }} stroke="#525252" allowDecimals={false} />
+                  <Tooltip contentStyle={{ background: "#0a0a0a", border: "1px solid #404040", color: "#fff" }} />
+                  <Line type="monotone" dataKey="pageviews" stroke="#fff" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="visitors" stroke="#737373" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -246,17 +246,17 @@ const DevkitPage = () => {
             <Section title="Top countries">
               <table className="w-full font-vercetti text-sm">
                 <thead>
-                  <tr className="border-b border-black/20 text-left text-[10px] uppercase tracking-widest text-black/50">
+                  <tr className="border-b border-neutral-700 text-left text-[10px] uppercase tracking-widest text-neutral-400">
                     <th className="py-2">Country</th>
                     <th className="py-2 text-right">Visitors</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.countries.length === 0 && (
-                    <tr><td colSpan={2} className="py-3 text-black/50">No data.</td></tr>
+                    <tr><td colSpan={2} className="py-3 text-neutral-500">No data.</td></tr>
                   )}
                   {stats.countries.map((c) => (
-                    <tr key={c.country} className="border-b border-black/10">
+                    <tr key={c.country} className="border-b border-neutral-800">
                       <td className="py-2">
                         <span className="mr-2 text-base">{countryFlag(c.country) || "🏳"}</span>
                         {c.country}
@@ -271,25 +271,25 @@ const DevkitPage = () => {
             <Section title="Devices · OS · Browser">
               <div className="grid grid-cols-3 gap-2 text-xs font-vercetti">
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-black/50 mb-1">Device</div>
+                  <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">Device</div>
                   {stats.devices.map((d) => (
-                    <div key={d.device} className="flex justify-between border-b border-black/10 py-1">
+                    <div key={d.device} className="flex justify-between border-b border-neutral-800 py-1">
                       <span className="capitalize">{d.device}</span><span>{fmtNum(d.visitors)}</span>
                     </div>
                   ))}
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-black/50 mb-1">OS</div>
+                  <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">OS</div>
                   {stats.oses.map((o) => (
-                    <div key={o.os} className="flex justify-between border-b border-black/10 py-1">
+                    <div key={o.os} className="flex justify-between border-b border-neutral-800 py-1">
                       <span className="truncate mr-1">{o.os}</span><span>{fmtNum(o.visitors)}</span>
                     </div>
                   ))}
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-black/50 mb-1">Browser</div>
+                  <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">Browser</div>
                   {stats.browsers.map((b) => (
-                    <div key={b.browser} className="flex justify-between border-b border-black/10 py-1">
+                    <div key={b.browser} className="flex justify-between border-b border-neutral-800 py-1">
                       <span className="truncate mr-1">{b.browser}</span><span>{fmtNum(b.visitors)}</span>
                     </div>
                   ))}
@@ -301,7 +301,7 @@ const DevkitPage = () => {
           <Section title="Top events">
             <table className="w-full font-vercetti text-sm">
               <thead>
-                <tr className="border-b border-black/20 text-left text-[10px] uppercase tracking-widest text-black/50">
+                <tr className="border-b border-neutral-700 text-left text-[10px] uppercase tracking-widest text-neutral-400">
                   <th className="py-2">Kind</th>
                   <th className="py-2">Target</th>
                   <th className="py-2">Label</th>
@@ -310,13 +310,13 @@ const DevkitPage = () => {
               </thead>
               <tbody>
                 {stats.topEvents.length === 0 && (
-                  <tr><td colSpan={4} className="py-3 text-black/50">No events tracked yet.</td></tr>
+                  <tr><td colSpan={4} className="py-3 text-neutral-500">No events tracked yet.</td></tr>
                 )}
                 {stats.topEvents.map((e, i) => (
-                  <tr key={i} className="border-b border-black/10">
-                    <td className="py-2 text-black/60">{e.kind}</td>
+                  <tr key={i} className="border-b border-neutral-800">
+                    <td className="py-2 text-neutral-400">{e.kind}</td>
                     <td className="py-2">{e.target}</td>
-                    <td className="py-2 text-black/60">{e.label ?? "—"}</td>
+                    <td className="py-2 text-neutral-400">{e.label ?? "—"}</td>
                     <td className="py-2 text-right">{fmtNum(e.hits)}</td>
                   </tr>
                 ))}
@@ -327,17 +327,17 @@ const DevkitPage = () => {
           <Section title="Top referrers">
             <table className="w-full font-vercetti text-sm">
               <thead>
-                <tr className="border-b border-black/20 text-left text-[10px] uppercase tracking-widest text-black/50">
+                <tr className="border-b border-neutral-700 text-left text-[10px] uppercase tracking-widest text-neutral-400">
                   <th className="py-2">Referrer</th>
                   <th className="py-2 text-right">Hits</th>
                 </tr>
               </thead>
               <tbody>
                 {stats.referrers.length === 0 && (
-                  <tr><td colSpan={2} className="py-3 text-black/50">No external referrers.</td></tr>
+                  <tr><td colSpan={2} className="py-3 text-neutral-500">No external referrers.</td></tr>
                 )}
                 {stats.referrers.map((r, i) => (
-                  <tr key={i} className="border-b border-black/10">
+                  <tr key={i} className="border-b border-neutral-800">
                     <td className="py-2 truncate max-w-md">{r.referrer}</td>
                     <td className="py-2 text-right">{fmtNum(r.hits)}</td>
                   </tr>
