@@ -5,7 +5,7 @@ import { logger } from "../lib/logger";
 import { getPool, isDevkitConfigured } from "../lib/mysql";
 import { issueDevkitCookie, clearDevkitCookie, isDevkitAuthed, requireDevkitAuth } from "../lib/devkitAuth";
 import { getCountry, getClientIp } from "../lib/geoCache";
-import { allow as rateLimitAllow } from "../lib/rateLimit";
+import { allow as rateLimitAllow, allowLogin } from "../lib/rateLimit";
 
 const router: IRouter = Router();
 
@@ -111,6 +111,8 @@ router.get("/devkit/session", (req, res) => {
 });
 
 router.post("/devkit/login", (req, res) => {
+  const ipKey = getClientIp(req) ?? "unknown";
+  if (!allowLogin(ipKey)) { res.status(429).json({ error: "too many attempts" }); return; }
   const body = req.body as { password?: unknown } | undefined;
   const expected = process.env.DEVKIT_PASSWORD;
   if (!expected) { res.status(500).json({ error: "not configured" }); return; }
