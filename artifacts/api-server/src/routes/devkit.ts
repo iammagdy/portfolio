@@ -46,6 +46,13 @@ const isAllowedOrigin = (req: { headers: Record<string, string | string[] | unde
   }
 };
 
+// Block bots and uninstrumented requests so the dashboard reflects real humans.
+const BOT_RE = /(bot|crawl|spider|slurp|bingpreview|mediapartners|facebookexternalhit|whatsapp|telegrambot|discordbot|linkedinbot|twitterbot|embedly|pingdom|uptimerobot|gtmetrix|lighthouse|monitor|wget|curl|httpclient|python-requests|axios|node-fetch|headless|phantomjs|selenium|puppeteer|playwright)/i;
+const isBotUA = (ua: string): boolean => {
+  if (!ua || ua.length < 8) return true; // empty/very short UA → not a real browser
+  return BOT_RE.test(ua);
+};
+
 router.post("/devkit/events", async (req, res) => {
   if (!isDevkitConfigured()) {
     res.status(204).end();
@@ -55,6 +62,8 @@ router.post("/devkit/events", async (req, res) => {
     res.status(204).end();
     return;
   }
+  const ua = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : "";
+  if (isBotUA(ua)) { res.status(204).end(); return; }
   const ipKey = getClientIp(req) ?? "unknown";
   if (!rateLimitAllow(ipKey)) {
     res.status(429).end();
@@ -87,7 +96,6 @@ router.post("/devkit/events", async (req, res) => {
     const durationMs = typeof body.durationMs === "number" && body.durationMs >= 0 && body.durationMs < 86_400_000
       ? Math.floor(body.durationMs) : null;
 
-    const ua = typeof req.headers["user-agent"] === "string" ? req.headers["user-agent"] : "";
     const { device, browser, os } = deviceFromUA(ua);
 
     const ip = getClientIp(req);

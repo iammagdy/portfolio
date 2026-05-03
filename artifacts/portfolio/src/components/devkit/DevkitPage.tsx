@@ -47,6 +47,12 @@ const fmtMs = (ms: unknown) => {
   if (n < 60_000) return `${Math.round(n / 1000)}s`;
   return `${Math.round(n / 60000)}m ${Math.round((n % 60000) / 1000)}s`;
 };
+const prettyLabel = (s: string | null | undefined) => {
+  if (!s || s === "unknown" || s === "Unknown") return "—";
+  // Strip "portal:" prefix and title-case the section name.
+  const cleaned = s.replace(/^portal:/, "").replace(/[-_]/g, " ");
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+};
 
 const Card = ({ title, value, sub }: { title: string; value: string; sub?: string }) => (
   <div className="bg-neutral-900 border border-neutral-700 rounded-sm p-4">
@@ -305,7 +311,7 @@ const DevkitPage = () => {
                   <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">Device</div>
                   {stats.devices.map((d) => (
                     <div key={d.device} className="flex justify-between border-b border-neutral-800 py-1">
-                      <span className="capitalize">{d.device}</span><span>{fmtNum(d.visitors)}</span>
+                      <span className="capitalize">{prettyLabel(d.device)}</span><span>{fmtNum(d.visitors)}</span>
                     </div>
                   ))}
                 </div>
@@ -313,7 +319,7 @@ const DevkitPage = () => {
                   <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">OS</div>
                   {stats.oses.map((o) => (
                     <div key={o.os} className="flex justify-between border-b border-neutral-800 py-1">
-                      <span className="truncate mr-1">{o.os}</span><span>{fmtNum(o.visitors)}</span>
+                      <span className="truncate mr-1">{prettyLabel(o.os)}</span><span>{fmtNum(o.visitors)}</span>
                     </div>
                   ))}
                 </div>
@@ -321,7 +327,7 @@ const DevkitPage = () => {
                   <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-1">Browser</div>
                   {stats.browsers.map((b) => (
                     <div key={b.browser} className="flex justify-between border-b border-neutral-800 py-1">
-                      <span className="truncate mr-1">{b.browser}</span><span>{fmtNum(b.visitors)}</span>
+                      <span className="truncate mr-1">{prettyLabel(b.browser)}</span><span>{fmtNum(b.visitors)}</span>
                     </div>
                   ))}
                 </div>
@@ -345,8 +351,8 @@ const DevkitPage = () => {
                 )}
                 {stats.topEvents.map((e, i) => (
                   <tr key={i} className="border-b border-neutral-800">
-                    <td className="py-2 text-neutral-400">{e.kind}</td>
-                    <td className="py-2">{e.target}</td>
+                    <td className="py-2 text-neutral-400">{e.kind === "portal_open" ? "section" : e.kind === "theme_change" ? "theme" : e.kind}</td>
+                    <td className="py-2">{prettyLabel(e.target)}</td>
                     <td className="py-2 text-neutral-400">{e.label ?? "—"}</td>
                     <td className="py-2 text-right">{fmtNum(e.hits)}</td>
                   </tr>
@@ -376,9 +382,9 @@ const DevkitPage = () => {
                   const pct = Math.round(((Number(f.hits) || 0) / max) * 100);
                   return (
                     <tr key={i} className="border-b border-neutral-800">
-                      <td className="py-2">{f.from_section}</td>
+                      <td className="py-2">{prettyLabel(f.from_section)}</td>
                       <td className="py-2">
-                        <span className="text-neutral-500 mr-2">→</span>{f.to_section}
+                        <span className="text-neutral-500 mr-2">→</span>{prettyLabel(f.to_section)}
                       </td>
                       <td className="py-2 text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -413,7 +419,7 @@ const DevkitPage = () => {
                 )}
                 {(stats.flowPaths ?? []).map((p, i) => (
                   <tr key={i} className="border-b border-neutral-800">
-                    <td className="py-2 break-all">{p.path}</td>
+                    <td className="py-2 break-all">{p.path.split(" → ").map(prettyLabel).join(" → ")}</td>
                     <td className="py-2 text-right tabular-nums">{fmtNum(p.sessions)}</td>
                     <td className="py-2 text-right tabular-nums text-neutral-400">{fmtNum(p.visitors)}</td>
                   </tr>
