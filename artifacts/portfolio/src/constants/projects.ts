@@ -45,6 +45,15 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    title: 'Wise Body : Fitness App',
+    date: '2026',
+    subtext: 'A Progressive Web App that helps people work out at home with zero equipment — guided bodyweight routines, progress tracking, and offline-friendly sessions you can run from any device.',
+    urls: [
+      { text: 'SITE ↗', url: 'https://fitness.thewise.cloud' },
+      { text: 'CODE ↗', disabled: true },
+    ],
+  },
+  {
     title: 'Wise Hire',
     date: '2026',
     subtext: 'An invite-only AI HR SaaS for recruiters and HR teams that offers AI-written job descriptions, candidate briefs, bulk CV screening, a Kanban hiring pipeline, HR analytics, and enterprise-ready features like SSO, all built on the same Wise Cloud platform.',
