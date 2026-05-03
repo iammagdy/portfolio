@@ -35,3 +35,9 @@ id = "GYuBWWkVOQ-Dtlwk7Had4"
 uri = "file://.local/hostinger-deploy/api-server.env.txt"
 type = "text"
 title = "api-server.env (rename to .env after editing the 2 CHANGE_ME values)"
+
+[[outputs]]
+id = "uRpeJSZLX-2BHLAAwVT6d"
+uri = "file://.local/hostinger-deploy/magdysaber-website-v1.12.0.tar.gz"
+type = "unspecified"
+title = "magdysaber-website-v1.12.0.tar.gz — upload to Hostinger public_html"
