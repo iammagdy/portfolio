@@ -203,6 +203,17 @@ const DevkitPage = () => {
             Download CSV
           </button>
           <button
+            onClick={async () => {
+              if (!confirm("Permanently delete ALL analytics data? This cannot be undone.")) return;
+              const r = await fetch(apiUrl("/api/devkit/reset"), { method: "POST", credentials: "include" });
+              if (r.ok) { setStats(null); void loadStats(days); }
+              else alert("Reset failed");
+            }}
+            className="border border-red-700 text-red-300 px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-red-700 hover:text-white transition"
+          >
+            Reset
+          </button>
+          <button
             onClick={onLogout}
             className="border border-neutral-700 text-white px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-white hover:text-black transition"
           >

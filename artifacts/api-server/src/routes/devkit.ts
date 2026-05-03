@@ -132,6 +132,20 @@ router.post("/devkit/logout", (_req, res) => {
   res.json({ ok: true });
 });
 
+// Wipe all analytics data. Owner-only.
+router.post("/devkit/reset", requireDevkitAuth, async (_req, res) => {
+  try {
+    if (!isDevkitConfigured()) { res.status(503).json({ error: "not configured" }); return; }
+    const pool = await getPool();
+    await pool.query("TRUNCATE TABLE devkit_events");
+    res.json({ ok: true });
+  } catch (err) {
+    const e = err as { message?: string; code?: string; sqlMessage?: string };
+    console.error("[devkit/reset] failed:", e?.code, e?.message, e?.sqlMessage);
+    res.status(500).json({ error: "reset failed", detail: e?.message ?? null, sql: e?.sqlMessage ?? null });
+  }
+});
+
 // Run a query, return rows or null on error. Records error in errors map.
 const runQ = async (
   pool: Awaited<ReturnType<typeof getPool>>,

@@ -7,6 +7,10 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Trust the reverse proxy (Hostinger / Replit / etc.) so req.ip and
+// X-Forwarded-For reflect the real client, not the proxy IP.
+app.set("trust proxy", true);
+
 app.use(
   pinoHttp({
     logger,

@@ -53,3 +53,9 @@ id = "EI5SlOxIjMH0f7x06ixsS"
 uri = "file://.local/hostinger-deploy/magdysaber-api-deploy-v3.tar.gz"
 type = "unspecified"
 title = "magdysaber-api-deploy-v3.tar.gz — upload to Hostinger Node.js app"
+
+[[outputs]]
+id = "8-xrzEP_fmm1zMdc3Qlhu"
+uri = "file://.local/hostinger-deploy/magdysaber-api-deploy-v4.tar.gz"
+type = "unspecified"
+title = "magdysaber-api-deploy-v4.tar.gz — final fix: real IPs + Reset button"

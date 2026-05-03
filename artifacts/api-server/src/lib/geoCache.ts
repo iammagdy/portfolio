@@ -48,18 +48,15 @@ export const getCountry = async (ip: string | null): Promise<string | null> => {
   }
 };
 
-// Only trust X-Forwarded-For when running behind a known proxy (Replit / production
-// hosting). Otherwise fall back to the socket address so a client can't spoof the
-// header to bypass rate limits or distort geo stats.
-const TRUST_FORWARDED = process.env.NODE_ENV === "production" || !!process.env.REPL_ID || !!process.env.REPLIT_DEV_DOMAIN;
-
-export const getClientIp = (req: { headers: Record<string, string | string[] | undefined>; socket: { remoteAddress?: string | null } }): string | null => {
-  if (TRUST_FORWARDED) {
-    const xf = req.headers["x-forwarded-for"];
-    if (typeof xf === "string" && xf.length > 0) {
-      // Take the left-most entry (original client) from the trusted hop chain.
-      return xf.split(",")[0]!.trim();
-    }
-  }
+// Read the real client IP. Express's `trust proxy` setting makes req.ip
+// resolve through X-Forwarded-For when behind a reverse proxy.
+export const getClientIp = (req: {
+  ip?: string;
+  headers: Record<string, string | string[] | undefined>;
+  socket: { remoteAddress?: string | null };
+}): string | null => {
+  if (typeof req.ip === "string" && req.ip.length > 0) return req.ip;
+  const xf = req.headers["x-forwarded-for"];
+  if (typeof xf === "string" && xf.length > 0) return xf.split(",")[0]!.trim();
   return req.socket.remoteAddress ?? null;
 };
