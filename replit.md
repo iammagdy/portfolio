@@ -36,7 +36,9 @@ This is Magdy Saber's 3D portfolio — a creative frontend showcase using React 
 - Auth: HMAC-signed httpOnly cookie (`devkit_session`), 30-day expiry. HMAC key derived from `DEVKIT_PASSWORD` via constant salt. Login uses SHA-256 + `timingSafeEqual` for constant-time compare.
 - Events endpoint enforces a same-origin allowlist (localhost, *.replit.dev/app, magdysaber.com).
 - Required Replit secrets: `HOSTINGER_DB_HOST`, `HOSTINGER_DB_PORT`, `HOSTINGER_DB_USER`, `HOSTINGER_DB_PASSWORD`, `HOSTINGER_DB_NAME`, `DEVKIT_PASSWORD`. If absent, tracker silently no-ops.
-- Stats endpoint: `GET /api/devkit/stats?days=N` (auth required) returns totals, daily series, countries, devices, top clicks, avg/max session length, top referrers. Rendered with Recharts.
+- Stats endpoint: `GET /api/devkit/stats?days=N` (auth required) returns totals, fixed today/7d/30d session+visitor windows, daily series, countries (with flag emojis in UI), devices, OSes, browsers, top events across click/theme/portal kinds, avg/max session length, and top referrers. Also `GET /api/devkit/export.csv?days=N` streams raw rows. Rendered with Recharts.
+- Schema/API contract note: events table uses normalized columns (`kind`, `target`, `label`, `duration_ms`, `path`, `referrer`, `country`, `device`, `os`, `browser`, `session_id`, `visitor_id`, `ts`) rather than a generic `type` + JSON `event_data` blob. This is intentional — owner-only tool, no external consumers, and normalized columns make the dashboard SQL straightforward. If a third-party ever needs to consume the feed, expose a view that aliases these columns.
+- SPA fallback for `/devkit` works via Vite's default history fallback; no extra config needed. Production hosting (Hostinger static + reverse proxy) must serve `index.html` for unknown routes — owner verifies this on deploy.
 
 ## Routing
 
