@@ -122,7 +122,10 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     <group
       position={position}
       rotation={rotation}
-      onClick={onClick}
+      onClick={() => {
+        track({ kind: "click", target: `project-tile:${project.title}`, label: "select" });
+        onClick();
+      }}
       onPointerOver={() => {
         if (isMobile || !isProjectSectionActive) return;
         // If a different tile is locked, don't react to hover.

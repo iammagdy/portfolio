@@ -105,8 +105,11 @@ export const installTracker = () => {
   // initial pageview
   track({ kind: "pageview" });
 
-  // session_end on hide/unload
+  // session_end on hide/unload (single-flight per page lifecycle).
+  let endFlushed = false;
   const flushEnd = () => {
+    if (endFlushed) return;
+    endFlushed = true;
     track({ kind: "session_end", durationMs: Date.now() - sessionStart() });
   };
   window.addEventListener("pagehide", flushEnd);
