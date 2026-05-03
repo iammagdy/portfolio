@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { FOOTER_LINKS } from "../../constants";
 import { FooterLink } from "../../types";
 import { MOBILE_BREAKPOINT } from "../../hooks/useBreakpoint";
+import { track } from "../../lib/devkitTracker";
 
 const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolean }) => {
   const textRef = useRef<THREE.Group>(null);
@@ -13,6 +14,7 @@ const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolea
   const onPointerOver = () => setHovered(true);
   const onPointerOut = () => setHovered(false);
   const onClick = () => {
+    track({ kind: "click", target: `footer:${link.name}`, label: link.url });
     if (link.url.startsWith('mailto:')) {
       window.location.href = link.url;
     } else {

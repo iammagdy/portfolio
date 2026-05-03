@@ -6,6 +6,7 @@ import * as THREE from "three";
 
 import { usePortalStore } from "@stores";
 import { Project, ProjectUrl } from "@types";
+import { track } from "../../../lib/devkitTracker";
 
 interface ProjectTileProps {
   project: Project;
@@ -113,6 +114,7 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
     const btn = e.eventObject;
     gsap.to(btn.position, { z: 0, duration: 0.1 })
       .then(() => gsap.to(btn.position, { z: 0.3, duration: 0.3 }));
+    track({ kind: "click", target: `project:${project.title}`, label: button.text });
     setTimeout(() => window.open(button.url, '_blank'), 50);
   };
 

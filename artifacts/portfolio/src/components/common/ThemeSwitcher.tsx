@@ -4,12 +4,16 @@ import { usePortalStore, useThemeStore } from "@stores";
 import gsap from "gsap";
 
 import { useEffect, useRef } from "react";
+import { track } from "../../lib/devkitTracker";
 
 const ThemeSwitcher = () => {
   const themeSwitcherRef = useRef<HTMLDivElement>(null);
   const { nextTheme, theme } = useThemeStore();
   const isActive = usePortalStore((state) => state.activePortalId);
-  const toggleTheme = () => nextTheme();
+  const toggleTheme = () => {
+    track({ kind: "theme_change", target: "theme_switcher", label: theme.color });
+    nextTheme();
+  };
 
   useGSAP(() => {
     gsap.to(themeSwitcherRef.current, {

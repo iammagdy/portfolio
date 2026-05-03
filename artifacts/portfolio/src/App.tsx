@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import CanvasLoader from "./components/common/CanvasLoader";
 import MobileProjectsOverlay from "./components/common/MobileProjectsOverlay";
 import MobileWorkOverlay from "./components/common/MobileWorkOverlay";
@@ -6,8 +7,18 @@ import ScrollWrapper from "./components/common/ScrollWrapper";
 import Experience from "./components/experience";
 import Footer from "./components/footer";
 import Hero from "./components/hero";
+import DevkitPage from "./components/devkit/DevkitPage";
+import { installTracker } from "./lib/devkitTracker";
 
-const Home = () => {
+const App = () => {
+  const isDevkit = typeof window !== "undefined" && window.location.pathname.startsWith("/devkit");
+
+  useEffect(() => {
+    if (!isDevkit) installTracker();
+  }, [isDevkit]);
+
+  if (isDevkit) return <DevkitPage />;
+
   return (
     <>
       <CanvasLoader>
@@ -24,4 +35,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default App;

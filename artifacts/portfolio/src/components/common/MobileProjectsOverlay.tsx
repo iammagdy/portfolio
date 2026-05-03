@@ -4,6 +4,7 @@ import { PROJECTS } from "@constants";
 import { usePortalStore } from "@stores";
 import { Project, ProjectUrl } from "@types";
 import { useIsMobileDOM } from "../../hooks/useBreakpoint";
+import { track } from "../../lib/devkitTracker";
 
 const buildButtons = (project: Project): ProjectUrl[] => {
   if (project.urls && project.urls.length > 0) return project.urls;
@@ -138,6 +139,7 @@ const MobileProjectsOverlay = () => {
                       href={btn.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => track({ kind: "click", target: `project:${activeProject.title}`, label: btn.text })}
                       className="font-vercetti text-xs tracking-wider px-3 py-2 bg-black text-white hover:opacity-90 transition active:scale-95 whitespace-nowrap"
                     >
                       {btn.text}

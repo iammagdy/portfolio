@@ -17,7 +17,7 @@ This is Magdy Saber's 3D portfolio — a creative frontend showcase using React 
 - **Animation**: GSAP + @gsap/react
 - **State management**: Zustand
 - **Fonts**: Soria (TTF) + Vercetti (WOFF) — local fonts in public/
-- **API framework**: Express 5 (artifacts/api-server, currently only serves /api/healthz)
+- **API framework**: Express 5 (artifacts/api-server). Routes: `/api/healthz`, `/api/devkit/*` (analytics + owner-only stats backed by Hostinger MySQL).
 - **Database**: PostgreSQL + Drizzle ORM (not used by portfolio)
 
 ## Artifacts
@@ -27,6 +27,16 @@ This is Magdy Saber's 3D portfolio — a creative frontend showcase using React 
 - `artifacts/portfolio-mobile` — Expo native portfolio (v1.3.0). Editorial / minimal direction; **no 3D** (three / r3f / expo-gl removed in Task #13). Tabs: Home / Projects / Work / Contact via expo-router with a custom text-only tab bar. System theme on launch + animated cross-fade on toggle (`hooks/useAutoTheme.ts`). Cold-start name-drop intro animation (`components/IntroOverlay.tsx`). Native bottom-sheet for project detail. Monochrome palette + accent (`#d97757` warm light, `#0690d4` cool dark) defined in `constants/colors.ts`. Splash has dark/light variants matching theme.
 - `artifacts/portfolio-promo-video` — Promo video artifact.
 - `artifacts/mockup-sandbox` — Canvas / mockup preview server.
+
+## Devkit (owner-only analytics)
+
+- Lives at `/devkit` inside the portfolio SPA (App.tsx checks `window.location.pathname`).
+- Tracker (`artifacts/portfolio/src/lib/devkitTracker.ts`) sends pageviews, clicks, theme changes, portal open/close, and session_end (via `sendBeacon`) to `POST /api/devkit/events`. Honors `navigator.doNotTrack`, never tracks on `/devkit`, no raw IPs stored — only ISO country code derived server-side from `ipapi.co` (250ms timeout, 24h LRU cache).
+- Backend tables auto-create on first DB call (`artifacts/api-server/src/lib/mysql.ts` — `devkit_events`, mysql2 pool size 3, keep-alive on).
+- Auth: HMAC-signed httpOnly cookie (`devkit_session`), 7-day expiry. HMAC key derived from `DEVKIT_PASSWORD` via constant salt. Login uses SHA-256 + `timingSafeEqual` for constant-time compare.
+- Events endpoint enforces a same-origin allowlist (localhost, *.replit.dev/app, magdysaber.com).
+- Required Replit secrets: `HOSTINGER_DB_HOST`, `HOSTINGER_DB_PORT`, `HOSTINGER_DB_USER`, `HOSTINGER_DB_PASSWORD`, `HOSTINGER_DB_NAME`, `DEVKIT_PASSWORD`. If absent, tracker silently no-ops.
+- Stats endpoint: `GET /api/devkit/stats?days=N` (auth required) returns totals, daily series, countries, devices, top clicks, avg/max session length, top referrers. Rendered with Recharts.
 
 ## Routing
 
