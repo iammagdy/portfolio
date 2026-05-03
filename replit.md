@@ -31,9 +31,9 @@ This is Magdy Saber's 3D portfolio — a creative frontend showcase using React 
 ## Devkit (owner-only analytics)
 
 - Lives at `/devkit` inside the portfolio SPA (App.tsx checks `window.location.pathname`).
-- Tracker (`artifacts/portfolio/src/lib/devkitTracker.ts`) sends pageviews, clicks, theme changes, portal open/close, and session_end (via `sendBeacon`) to `POST /api/devkit/events`. Honors `navigator.doNotTrack`, never tracks on `/devkit`, no raw IPs stored — only ISO country code derived server-side from `ipapi.co` (250ms timeout, 24h LRU cache).
+- Tracker (`artifacts/portfolio/src/lib/devkitTracker.ts`) sends pageviews, clicks, theme changes, portal open/close, and session_end (via `sendBeacon`) to `POST /api/devkit/events`. Honors `navigator.doNotTrack`, never tracks on `/devkit`, no raw IPs stored — only ISO country code derived server-side from `ipapi.co` (200ms timeout, 24h LRU cache).
 - Backend tables auto-create on first DB call (`artifacts/api-server/src/lib/mysql.ts` — `devkit_events`, mysql2 pool size 3, keep-alive on).
-- Auth: HMAC-signed httpOnly cookie (`devkit_session`), 7-day expiry. HMAC key derived from `DEVKIT_PASSWORD` via constant salt. Login uses SHA-256 + `timingSafeEqual` for constant-time compare.
+- Auth: HMAC-signed httpOnly cookie (`devkit_session`), 30-day expiry. HMAC key derived from `DEVKIT_PASSWORD` via constant salt. Login uses SHA-256 + `timingSafeEqual` for constant-time compare.
 - Events endpoint enforces a same-origin allowlist (localhost, *.replit.dev/app, magdysaber.com).
 - Required Replit secrets: `HOSTINGER_DB_HOST`, `HOSTINGER_DB_PORT`, `HOSTINGER_DB_USER`, `HOSTINGER_DB_PASSWORD`, `HOSTINGER_DB_NAME`, `DEVKIT_PASSWORD`. If absent, tracker silently no-ops.
 - Stats endpoint: `GET /api/devkit/stats?days=N` (auth required) returns totals, daily series, countries, devices, top clicks, avg/max session length, top referrers. Rendered with Recharts.

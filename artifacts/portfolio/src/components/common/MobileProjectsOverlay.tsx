@@ -66,7 +66,10 @@ const MobileProjectsOverlay = () => {
               <button
                 type="button"
                 key={`${project.title}-${i}`}
-                onClick={() => setActiveProject(project)}
+                onClick={() => {
+                  track({ kind: "click", target: `project-tile:${project.title}`, label: "open" });
+                  setActiveProject(project);
+                }}
                 className="text-left bg-white/95 border border-black/80 rounded-sm p-3 flex flex-col gap-2 active:scale-95 transition-transform shadow-[0_2px_8px_rgba(0,0,0,0.15)] min-h-[140px]"
               >
                 <span className="inline-block self-start font-vercetti text-[10px] tracking-wider border border-black/70 px-2 py-0.5 text-black">
