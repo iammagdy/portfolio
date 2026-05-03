@@ -27,7 +27,8 @@ const FooterLinkItem = ({ link, isMobile }: { link: FooterLink; isMobile: boolea
     gsap.to(hoverDiv, {
       top: `${e.clientY + 14}px`,
       left: `${e.clientX}px`,
-      duration: 0.6,
+      duration: 0.12,
+      ease: 'power2.out',
     });
   };
 

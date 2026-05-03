@@ -126,7 +126,7 @@ const MobileProjectsOverlay = () => {
                     return (
                       <span
                         key={j}
-                        className="font-vercetti text-xs tracking-wider px-4 py-2 border border-black/30 text-black/40 bg-black/5 select-none"
+                        className="font-vercetti text-xs tracking-wider px-3 py-2 border border-black/30 text-black/40 bg-black/5 select-none whitespace-nowrap"
                       >
                         {label} • SOON
                       </span>
@@ -138,7 +138,7 @@ const MobileProjectsOverlay = () => {
                       href={btn.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-vercetti text-xs tracking-wider px-4 py-2 bg-black text-white hover:opacity-90 transition active:scale-95"
+                      className="font-vercetti text-xs tracking-wider px-3 py-2 bg-black text-white hover:opacity-90 transition active:scale-95 whitespace-nowrap"
                     >
                       {btn.text}
                     </a>

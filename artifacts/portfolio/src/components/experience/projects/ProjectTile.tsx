@@ -190,20 +190,29 @@ const ProjectTile = ({ project, index, position, rotation, activeId, onClick }: 
                 <mesh>
                   <boxGeometry args={[1.2, 0.4, 0.2]} />
                   <meshBasicMaterial
-                    color={isDisabled ? "#888" : "#222"}
+                    color={isDisabled ? "#555" : "#222"}
                     transparent
-                    opacity={isDisabled ? 0.55 : 1}
+                    opacity={isDisabled ? 0.85 : 1}
                   />
-                  <Edges color={isDisabled ? "#bbb" : "white"} lineWidth={1} />
+                  <Edges color={isDisabled ? "#ddd" : "white"} lineWidth={1} />
                 </mesh>
                 <Text
                   {...subtitleProps}
                   anchorX="center"
                   anchorY="middle"
                   color="white"
-                  fillOpacity={isDisabled ? 0.7 : 1}
+                  fillOpacity={isDisabled ? 0.9 : 1}
                   position={[0, 0, 0.2]}
-                  fontSize={isDisabled ? 0.15 : 0.22}>
+                  maxWidth={1.1}
+                  fontSize={
+                    isDisabled
+                      ? 0.15
+                      : label.length > 12
+                        ? 0.13
+                        : label.length > 8
+                          ? 0.17
+                          : 0.22
+                  }>
                   {label}
                 </Text>
               </group>

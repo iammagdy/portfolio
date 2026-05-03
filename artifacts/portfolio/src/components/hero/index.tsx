@@ -27,7 +27,8 @@ const Hero = () => {
         duration: 1,
       }, {
         y: 0,
-        duration: 3
+        duration: 3,
+        delay: 0.15,
       });
     }
   }, [progress]);

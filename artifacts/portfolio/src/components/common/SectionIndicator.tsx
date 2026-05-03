@@ -47,8 +47,10 @@ const SectionIndicator = () => {
               width: isActive ? '10px' : '6px',
               height: isActive ? '10px' : '6px',
               borderRadius: '50%',
-              background: isActive ? '#ffffff' : 'rgba(255,255,255,0.45)',
-              boxShadow: isActive ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
+              background: isActive ? '#ffffff' : 'rgba(255,255,255,0.55)',
+              boxShadow: isActive
+                ? '0 0 8px rgba(255,255,255,0.6), 0 0 0 1px rgba(0,0,0,0.35)'
+                : '0 0 0 1px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)',
               transition: 'all 0.35s ease',
             }}
           />
