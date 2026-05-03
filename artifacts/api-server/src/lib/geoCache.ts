@@ -6,7 +6,10 @@ interface Entry { country: string | null; expires: number }
 const cache = new Map<string, Entry>();
 
 export const getCountry = async (ip: string | null): Promise<string | null> => {
-  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("172.")) {
+  // RFC1918 private ranges: 10/8, 192.168/16, 172.16/12 (172.16-172.31).
+  const m172 = ip ? /^172\.(\d+)\./.exec(ip) : null;
+  const isPrivate172 = m172 ? (() => { const o = Number(m172[1]); return o >= 16 && o <= 31; })() : false;
+  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("10.") || ip.startsWith("192.168.") || isPrivate172) {
     return null;
   }
   const cached = cache.get(ip);
