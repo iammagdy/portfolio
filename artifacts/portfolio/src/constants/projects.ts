@@ -77,6 +77,14 @@ export const PROJECTS: Project[] = [
     subtext: 'A Chrome extension that automates LinkedIn candidate sourcing using Google Gemini AI (and optionally OpenRouter or Groq). It evaluates profiles against a job description, scores matches, and presents a full-featured results dashboard with skill-gap analysis, outreach generation, and session history.',
     urls: [
       { text: 'VIEW ↗', disabled: true },
+      {
+        text: 'CONTACT TO BUY ↗',
+        url: `mailto:contact@magdysaber.com?subject=${encodeURIComponent(
+          'Magic Sourcing — purchase enquiry',
+        )}&body=${encodeURIComponent(
+          "Hi Magdy,\n\nI'd like to buy your Magic Sourcing Chrome extension. Could you share pricing, licensing, and how to get started?\n\nThanks,\n",
+        )}`,
+      },
     ],
   },
 ];
