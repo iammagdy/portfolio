@@ -269,7 +269,14 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
     });
   } catch (err) {
     logger.error({ err }, "devkit stats failed");
-    res.status(500).json({ error: "stats failed" });
+    const e = err as { message?: string; code?: string; sqlMessage?: string };
+    console.error("[devkit/stats] FAILED:", e?.code, e?.message, e?.sqlMessage);
+    res.status(500).json({
+      error: "stats failed",
+      detail: e?.message ?? null,
+      code: e?.code ?? null,
+      sql: e?.sqlMessage ?? null,
+    });
   }
 });
 

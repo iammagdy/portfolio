@@ -41,3 +41,9 @@ id = "uRpeJSZLX-2BHLAAwVT6d"
 uri = "file://.local/hostinger-deploy/magdysaber-website-v1.12.0.tar.gz"
 type = "unspecified"
 title = "magdysaber-website-v1.12.0.tar.gz — upload to Hostinger public_html"
+
+[[outputs]]
+id = "CygCD1ii-My7B1J8_L4mb"
+uri = "file://.local/hostinger-deploy/magdysaber-api-deploy-v2.tar.gz"
+type = "unspecified"
+title = "magdysaber-api-deploy-v2.tar.gz — upload to Hostinger Node.js app"
