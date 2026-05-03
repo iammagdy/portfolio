@@ -7,20 +7,32 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  BarChart,
-  Bar,
 } from "recharts";
 
 interface Stats {
   days: number;
   totals: { events?: number; pageviews?: number; clicks?: number; visitors?: number; sessions?: number };
+  windows: {
+    sessions_24h?: number; sessions_7d?: number; sessions_30d?: number;
+    visitors_24h?: number; visitors_7d?: number; visitors_30d?: number;
+  };
   daily: Array<{ day: string; pageviews: number; visitors: number }>;
   countries: Array<{ country: string; visitors: number }>;
   devices: Array<{ device: string; visitors: number }>;
-  clicks: Array<{ target: string; label: string | null; clicks: number }>;
+  oses: Array<{ os: string; visitors: number }>;
+  browsers: Array<{ browser: string; visitors: number }>;
+  topEvents: Array<{ kind: string; target: string; label: string | null; hits: number }>;
   sessionLength: { avg_ms?: number | null; max_ms?: number | null };
   referrers: Array<{ referrer: string; hits: number }>;
 }
+
+const countryFlag = (cc: string): string => {
+  if (!cc || cc.length !== 2 || !/^[A-Za-z]{2}$/.test(cc)) return "";
+  const A = 0x1f1e6;
+  const base = "A".charCodeAt(0);
+  const u = cc.toUpperCase();
+  return String.fromCodePoint(A + (u.charCodeAt(0) - base), A + (u.charCodeAt(1) - base));
+};
 
 const fmtNum = (n: unknown) => (typeof n === "number" ? n.toLocaleString() : Number(n ?? 0).toLocaleString());
 const fmtMs = (ms: unknown) => {
@@ -148,6 +160,11 @@ const DevkitPage = () => {
   }
 
   const t = stats?.totals ?? {};
+  const w = stats?.windows ?? {};
+
+  const downloadCsv = () => {
+    window.location.href = `/api/devkit/export.csv?days=${days}`;
+  };
 
   return (
     <div className="min-h-screen px-4 sm:px-8 py-8 max-w-7xl mx-auto">
@@ -174,6 +191,12 @@ const DevkitPage = () => {
             Refresh
           </button>
           <button
+            onClick={downloadCsv}
+            className="border border-black px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-black hover:text-white transition"
+          >
+            Download CSV
+          </button>
+          <button
             onClick={onLogout}
             className="border border-black px-3 py-2 font-vercetti text-xs uppercase tracking-widest hover:bg-black hover:text-white transition"
           >
@@ -192,9 +215,13 @@ const DevkitPage = () => {
 
       {stats && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <Card title="Visitors" value={fmtNum(t.visitors)} />
-            <Card title="Sessions" value={fmtNum(t.sessions)} />
+          <div className="grid grid-cols-3 gap-3">
+            <Card title="Today" value={fmtNum(w.sessions_24h)} sub={`${fmtNum(w.visitors_24h)} unique`} />
+            <Card title="Last 7 days" value={fmtNum(w.sessions_7d)} sub={`${fmtNum(w.visitors_7d)} unique`} />
+            <Card title="Last 30 days" value={fmtNum(w.sessions_30d)} sub={`${fmtNum(w.visitors_30d)} unique`} />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card title={`Visitors (${days}d)`} value={fmtNum(t.visitors)} />
             <Card title="Pageviews" value={fmtNum(t.pageviews)} />
             <Card title="Clicks" value={fmtNum(t.clicks)} />
             <Card title="Avg session" value={fmtMs(stats.sessionLength.avg_ms)} sub={`max ${fmtMs(stats.sessionLength.max_ms)}`} />
@@ -217,57 +244,80 @@ const DevkitPage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Section title="Top countries">
-              <div style={{ width: "100%", height: 280 }}>
-                <ResponsiveContainer>
-                  <BarChart data={stats.countries} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                    <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
-                    <XAxis dataKey="country" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
-                    <Tooltip />
-                    <Bar dataKey="visitors" fill="#000" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Section>
-
-            <Section title="Devices">
               <table className="w-full font-vercetti text-sm">
                 <thead>
                   <tr className="border-b border-black/20 text-left text-[10px] uppercase tracking-widest text-black/50">
-                    <th className="py-2">Device</th>
+                    <th className="py-2">Country</th>
                     <th className="py-2 text-right">Visitors</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.devices.map((d) => (
-                    <tr key={d.device} className="border-b border-black/10">
-                      <td className="py-2 capitalize">{d.device}</td>
-                      <td className="py-2 text-right">{fmtNum(d.visitors)}</td>
+                  {stats.countries.length === 0 && (
+                    <tr><td colSpan={2} className="py-3 text-black/50">No data.</td></tr>
+                  )}
+                  {stats.countries.map((c) => (
+                    <tr key={c.country} className="border-b border-black/10">
+                      <td className="py-2">
+                        <span className="mr-2 text-base">{countryFlag(c.country) || "🏳"}</span>
+                        {c.country}
+                      </td>
+                      <td className="py-2 text-right">{fmtNum(c.visitors)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </Section>
+
+            <Section title="Devices · OS · Browser">
+              <div className="grid grid-cols-3 gap-2 text-xs font-vercetti">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-black/50 mb-1">Device</div>
+                  {stats.devices.map((d) => (
+                    <div key={d.device} className="flex justify-between border-b border-black/10 py-1">
+                      <span className="capitalize">{d.device}</span><span>{fmtNum(d.visitors)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-black/50 mb-1">OS</div>
+                  {stats.oses.map((o) => (
+                    <div key={o.os} className="flex justify-between border-b border-black/10 py-1">
+                      <span className="truncate mr-1">{o.os}</span><span>{fmtNum(o.visitors)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-black/50 mb-1">Browser</div>
+                  {stats.browsers.map((b) => (
+                    <div key={b.browser} className="flex justify-between border-b border-black/10 py-1">
+                      <span className="truncate mr-1">{b.browser}</span><span>{fmtNum(b.visitors)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Section>
           </div>
 
-          <Section title="Top clicks">
+          <Section title="Top events">
             <table className="w-full font-vercetti text-sm">
               <thead>
                 <tr className="border-b border-black/20 text-left text-[10px] uppercase tracking-widest text-black/50">
+                  <th className="py-2">Kind</th>
                   <th className="py-2">Target</th>
                   <th className="py-2">Label</th>
-                  <th className="py-2 text-right">Clicks</th>
+                  <th className="py-2 text-right">Hits</th>
                 </tr>
               </thead>
               <tbody>
-                {stats.clicks.length === 0 && (
-                  <tr><td colSpan={3} className="py-3 text-black/50">No clicks tracked yet.</td></tr>
+                {stats.topEvents.length === 0 && (
+                  <tr><td colSpan={4} className="py-3 text-black/50">No events tracked yet.</td></tr>
                 )}
-                {stats.clicks.map((c, i) => (
+                {stats.topEvents.map((e, i) => (
                   <tr key={i} className="border-b border-black/10">
-                    <td className="py-2">{c.target}</td>
-                    <td className="py-2 text-black/60">{c.label ?? "—"}</td>
-                    <td className="py-2 text-right">{fmtNum(c.clicks)}</td>
+                    <td className="py-2 text-black/60">{e.kind}</td>
+                    <td className="py-2">{e.target}</td>
+                    <td className="py-2 text-black/60">{e.label ?? "—"}</td>
+                    <td className="py-2 text-right">{fmtNum(e.hits)}</td>
                   </tr>
                 ))}
               </tbody>

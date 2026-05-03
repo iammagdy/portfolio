@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { getPool, isDevkitConfigured } from "./lib/mysql";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,13 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Initialize devkit MySQL pool + schema at boot so failures surface immediately.
+  if (isDevkitConfigured()) {
+    getPool()
+      .then(() => logger.info("Devkit MySQL: connected and schema ensured"))
+      .catch((dbErr) => logger.error({ err: dbErr }, "Devkit MySQL: connection failed at boot"));
+  } else {
+    logger.warn("Devkit MySQL: not configured (HOSTINGER_DB_* / DEVKIT_PASSWORD missing); /api/devkit/events will silently no-op");
+  }
 });

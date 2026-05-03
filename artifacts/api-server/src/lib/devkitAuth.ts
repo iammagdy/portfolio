@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 
 const COOKIE_NAME = "devkit_session";
-const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Derive an HMAC key from the password using a fixed app salt, so the cookie
 // signing key is not the raw password (offline brute force still requires the

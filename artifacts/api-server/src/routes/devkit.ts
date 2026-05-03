@@ -5,6 +5,7 @@ import { logger } from "../lib/logger";
 import { getPool, isDevkitConfigured } from "../lib/mysql";
 import { issueDevkitCookie, clearDevkitCookie, isDevkitAuthed, requireDevkitAuth } from "../lib/devkitAuth";
 import { getCountry, getClientIp } from "../lib/geoCache";
+import { allow as rateLimitAllow } from "../lib/rateLimit";
 
 const router: IRouter = Router();
 
@@ -52,6 +53,11 @@ router.post("/devkit/events", async (req, res) => {
   }
   if (!isAllowedOrigin(req)) {
     res.status(204).end();
+    return;
+  }
+  const ipKey = getClientIp(req) ?? "unknown";
+  if (!rateLimitAllow(ipKey)) {
+    res.status(429).end();
     return;
   }
   try {
@@ -141,6 +147,18 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
+    // Fixed Today / 7-day / 30-day session counts (always included regardless of `days`).
+    const [windows] = await pool.query(
+      `SELECT
+         COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 1 DAY THEN session_id END) AS sessions_24h,
+         COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 7 DAY THEN session_id END) AS sessions_7d,
+         COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 30 DAY THEN session_id END) AS sessions_30d,
+         COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 1 DAY THEN visitor_id END) AS visitors_24h,
+         COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 7 DAY THEN visitor_id END) AS visitors_7d,
+         COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 30 DAY THEN visitor_id END) AS visitors_30d
+       FROM devkit_events`,
+    );
+
     const [daily] = await pool.query(
       `SELECT DATE(ts) AS day,
               SUM(kind='pageview') AS pageviews,
@@ -164,10 +182,28 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
-    const [clicks] = await pool.query(
-      `SELECT target, label, COUNT(*) AS clicks
-       FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY AND kind='click' AND target IS NOT NULL
-       GROUP BY target, label ORDER BY clicks DESC LIMIT 20`,
+    const [oses] = await pool.query(
+      `SELECT COALESCE(os, 'unknown') AS os, COUNT(DISTINCT visitor_id) AS visitors
+       FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
+       GROUP BY os ORDER BY visitors DESC LIMIT 10`,
+      [days],
+    );
+
+    const [browsers] = await pool.query(
+      `SELECT COALESCE(browser, 'unknown') AS browser, COUNT(DISTINCT visitor_id) AS visitors
+       FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
+       GROUP BY browser ORDER BY visitors DESC LIMIT 10`,
+      [days],
+    );
+
+    // Top events across ALL interaction kinds (clicks + theme + portal opens).
+    const [topEvents] = await pool.query(
+      `SELECT kind, target, label, COUNT(*) AS hits
+       FROM devkit_events
+       WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
+         AND target IS NOT NULL
+         AND kind IN ('click','theme_change','portal_open')
+       GROUP BY kind, target, label ORDER BY hits DESC LIMIT 25`,
       [days],
     );
 
@@ -187,16 +223,53 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
     res.json({
       days,
       totals: (totals as Array<Record<string, unknown>>)[0] ?? {},
+      windows: (windows as Array<Record<string, unknown>>)[0] ?? {},
       daily,
       countries,
       devices,
-      clicks,
+      oses,
+      browsers,
+      topEvents,
       sessionLength: (sessionLen as Array<Record<string, unknown>>)[0] ?? {},
       referrers,
     });
   } catch (err) {
     logger.error({ err }, "devkit stats failed");
     res.status(500).json({ error: "stats failed" });
+  }
+});
+
+const csvEscape = (v: unknown): string => {
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+};
+
+router.get("/devkit/export.csv", requireDevkitAuth, async (req, res) => {
+  try {
+    if (!isDevkitConfigured()) { res.status(503).end("not configured"); return; }
+    const days = Math.max(1, Math.min(365, Number(req.query.days ?? 30)));
+    const pool = await getPool();
+    const [rows] = await pool.query(
+      `SELECT ts, session_id, visitor_id, kind, path, target, label, country, device, browser, os, referrer, duration_ms
+       FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY ORDER BY ts ASC LIMIT 100000`,
+      [days],
+    );
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="devkit-${days}d.csv"`);
+    const header = "ts,session_id,visitor_id,kind,path,target,label,country,device,browser,os,referrer,duration_ms\n";
+    res.write(header);
+    for (const r of rows as Array<Record<string, unknown>>) {
+      res.write([
+        r.ts, r.session_id, r.visitor_id, r.kind, r.path, r.target, r.label,
+        r.country, r.device, r.browser, r.os, r.referrer, r.duration_ms,
+      ].map(csvEscape).join(",") + "\n");
+    }
+    res.end();
+  } catch (err) {
+    logger.error({ err }, "devkit csv export failed");
+    res.status(500).end("export failed");
   }
 });
 
