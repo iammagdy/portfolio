@@ -1,20 +1,23 @@
+// Plain-stdout boot banner so hosts that don't capture pino output (e.g. some
+// shared-hosting Node panels) still see something on cold start.
+// eslint-disable-next-line no-console
+console.log(`[boot] api-server starting; node=${process.version} pid=${process.pid} cwd=${process.cwd()}`);
+
 import app from "./app";
 import { logger } from "./lib/logger";
 import { getPool, isDevkitConfigured } from "./lib/mysql";
 
-const rawPort = process.env["PORT"];
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
+const rawPort = process.env["PORT"] ?? "3000";
 const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
+  // eslint-disable-next-line no-console
+  console.error(`[boot] Invalid PORT value: "${rawPort}"`);
+  process.exit(1);
 }
+
+// eslint-disable-next-line no-console
+console.log(`[boot] listening on port ${port}`);
 
 app.listen(port, (err) => {
   if (err) {
