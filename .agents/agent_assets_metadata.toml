@@ -28,7 +28,7 @@ title = "Hostinger Deploy Guide (read this first)"
 id = "kzDjVv1HBJij56tKpIOy0"
 uri = "file://.local/hostinger-deploy/magdysaber-api-deploy.tar.gz"
 type = "unspecified"
-title = "magdysaber-api-deploy.tar.gz (NEW — re-upload this)"
+title = "magdysaber-api-deploy.tar.gz (FIXED — mysql2 bundled, re-upload this)"
 
 [[outputs]]
 id = "GYuBWWkVOQ-Dtlwk7Had4"
