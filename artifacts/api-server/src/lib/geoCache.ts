@@ -12,8 +12,22 @@ export const getCountry = async (ip: string | null): Promise<string | null> => {
   if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("10.") || ip.startsWith("192.168.") || isPrivate172) {
     return null;
   }
+  // True LRU: re-insert on read so most-recently-used entries stay; evict oldest at capacity.
   const cached = cache.get(ip);
-  if (cached && cached.expires > Date.now()) return cached.country;
+  if (cached && cached.expires > Date.now()) {
+    cache.delete(ip);
+    cache.set(ip, cached);
+    return cached.country;
+  }
+
+  const setLru = (entry: Entry) => {
+    cache.delete(ip);
+    if (cache.size >= CACHE_MAX) {
+      const firstKey = cache.keys().next().value;
+      if (firstKey !== undefined) cache.delete(firstKey);
+    }
+    cache.set(ip, entry);
+  };
 
   try {
     const ctrl = new AbortController();
@@ -21,19 +35,15 @@ export const getCountry = async (ip: string | null): Promise<string | null> => {
     const resp = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/country/`, { signal: ctrl.signal });
     clearTimeout(timer);
     if (!resp.ok) {
-      cache.set(ip, { country: null, expires: Date.now() + 60_000 });
+      setLru({ country: null, expires: Date.now() + 60_000 });
       return null;
     }
     const text = (await resp.text()).trim().toUpperCase();
     const country = /^[A-Z]{2}$/.test(text) ? text : null;
-    if (cache.size >= CACHE_MAX) {
-      const firstKey = cache.keys().next().value;
-      if (firstKey !== undefined) cache.delete(firstKey);
-    }
-    cache.set(ip, { country, expires: Date.now() + CACHE_TTL_MS });
+    setLru({ country, expires: Date.now() + CACHE_TTL_MS });
     return country;
   } catch {
-    cache.set(ip, { country: null, expires: Date.now() + 60_000 });
+    setLru({ country: null, expires: Date.now() + 60_000 });
     return null;
   }
 };
