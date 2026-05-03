@@ -215,6 +215,36 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
+    const [flowTransitions] = await pool.query(
+      `SELECT from_section, to_section, COUNT(*) AS hits
+       FROM (
+         SELECT session_id, target AS to_section,
+                LAG(target) OVER (PARTITION BY session_id ORDER BY ts, id) AS from_section
+         FROM devkit_events
+         WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
+           AND kind = 'portal_open' AND target IS NOT NULL
+       ) t
+       WHERE from_section IS NOT NULL AND from_section <> to_section
+       GROUP BY from_section, to_section
+       ORDER BY hits DESC LIMIT 20`,
+      [days],
+    );
+
+    const [flowPaths] = await pool.query(
+      `SELECT path, COUNT(*) AS sessions, COUNT(DISTINCT visitor_id) AS visitors
+       FROM (
+         SELECT session_id, ANY_VALUE(visitor_id) AS visitor_id,
+                GROUP_CONCAT(target ORDER BY ts, id SEPARATOR ' → ') AS path
+         FROM devkit_events
+         WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
+           AND kind = 'portal_open' AND target IS NOT NULL
+         GROUP BY session_id
+       ) s
+       WHERE path IS NOT NULL AND path <> ''
+       GROUP BY path ORDER BY sessions DESC LIMIT 10`,
+      [days],
+    );
+
     const [referrers] = await pool.query(
       `SELECT referrer, COUNT(*) AS hits FROM devkit_events
        WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY AND kind='pageview' AND referrer IS NOT NULL AND referrer <> ''
@@ -234,6 +264,8 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       topEvents,
       sessionLength: (sessionLen as Array<Record<string, unknown>>)[0] ?? {},
       referrers,
+      flowTransitions,
+      flowPaths,
     });
   } catch (err) {
     logger.error({ err }, "devkit stats failed");

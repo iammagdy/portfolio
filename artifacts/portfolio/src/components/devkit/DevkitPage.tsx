@@ -24,6 +24,8 @@ interface Stats {
   topEvents: Array<{ kind: string; target: string; label: string | null; hits: number }>;
   sessionLength: { avg_ms?: number | null; max_ms?: number | null };
   referrers: Array<{ referrer: string; hits: number }>;
+  flowTransitions: Array<{ from_section: string; to_section: string; hits: number }>;
+  flowPaths: Array<{ path: string; sessions: number; visitors: number }>;
 }
 
 const countryFlag = (cc: string): string => {
@@ -318,6 +320,73 @@ const DevkitPage = () => {
                     <td className="py-2">{e.target}</td>
                     <td className="py-2 text-neutral-400">{e.label ?? "—"}</td>
                     <td className="py-2 text-right">{fmtNum(e.hits)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Section>
+
+          <Section title="Flow — top section transitions">
+            <p className="font-vercetti text-[10px] text-neutral-500 mb-3">
+              Based on portal_open events ordered within each session. Shows where visitors move between sections.
+            </p>
+            <table className="w-full font-vercetti text-sm">
+              <thead>
+                <tr className="border-b border-neutral-700 text-left text-[10px] uppercase tracking-widest text-neutral-400">
+                  <th className="py-2">From</th>
+                  <th className="py-2">To</th>
+                  <th className="py-2 text-right">Hits</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats.flowTransitions ?? []).length === 0 && (
+                  <tr><td colSpan={3} className="py-3 text-neutral-500">No transitions yet.</td></tr>
+                )}
+                {(stats.flowTransitions ?? []).map((f, i) => {
+                  const max = Math.max(...(stats.flowTransitions ?? []).map((x) => Number(x.hits) || 0), 1);
+                  const pct = Math.round(((Number(f.hits) || 0) / max) * 100);
+                  return (
+                    <tr key={i} className="border-b border-neutral-800">
+                      <td className="py-2">{f.from_section}</td>
+                      <td className="py-2">
+                        <span className="text-neutral-500 mr-2">→</span>{f.to_section}
+                      </td>
+                      <td className="py-2 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-24 h-1.5 bg-neutral-800 rounded-sm overflow-hidden">
+                            <div className="h-full bg-white" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="tabular-nums">{fmtNum(f.hits)}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Section>
+
+          <Section title="Flow — top 10 session paths">
+            <p className="font-vercetti text-[10px] text-neutral-500 mb-3">
+              Most common ordered sequences of sections opened within a session.
+            </p>
+            <table className="w-full font-vercetti text-sm">
+              <thead>
+                <tr className="border-b border-neutral-700 text-left text-[10px] uppercase tracking-widest text-neutral-400">
+                  <th className="py-2">Path</th>
+                  <th className="py-2 text-right">Sessions</th>
+                  <th className="py-2 text-right">Visitors</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(stats.flowPaths ?? []).length === 0 && (
+                  <tr><td colSpan={3} className="py-3 text-neutral-500">No paths yet.</td></tr>
+                )}
+                {(stats.flowPaths ?? []).map((p, i) => (
+                  <tr key={i} className="border-b border-neutral-800">
+                    <td className="py-2 break-all">{p.path}</td>
+                    <td className="py-2 text-right tabular-nums">{fmtNum(p.sessions)}</td>
+                    <td className="py-2 text-right tabular-nums text-neutral-400">{fmtNum(p.visitors)}</td>
                   </tr>
                 ))}
               </tbody>
