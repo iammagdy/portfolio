@@ -132,13 +132,49 @@ router.post("/devkit/logout", (_req, res) => {
   res.json({ ok: true });
 });
 
+// Run a query, return rows or null on error. Records error in errors map.
+const runQ = async (
+  pool: Awaited<ReturnType<typeof getPool>>,
+  errors: Record<string, string>,
+  key: string,
+  sql: string,
+  params: unknown[] = [],
+): Promise<unknown[]> => {
+  try {
+    const [rows] = await pool.query(sql, params);
+    return rows as unknown[];
+  } catch (err) {
+    const e = err as { message?: string; code?: string; sqlMessage?: string };
+    const msg = `${e?.code ?? "ERR"}: ${e?.sqlMessage ?? e?.message ?? "unknown"}`;
+    errors[key] = msg;
+    console.error(`[devkit/stats] ${key} failed:`, msg);
+    return [];
+  }
+};
+
 router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
   try {
     if (!isDevkitConfigured()) { res.status(503).json({ error: "not configured" }); return; }
     const days = Math.max(1, Math.min(90, Number(req.query.days ?? 30)));
-    const pool = await getPool();
 
-    const [totals] = await pool.query(
+    let pool: Awaited<ReturnType<typeof getPool>>;
+    try {
+      pool = await getPool();
+    } catch (err) {
+      const e = err as { message?: string; code?: string; sqlMessage?: string };
+      console.error("[devkit/stats] pool init failed:", e?.code, e?.message, e?.sqlMessage);
+      res.status(500).json({
+        error: "database connection failed",
+        detail: e?.message ?? null,
+        code: e?.code ?? null,
+        sql: e?.sqlMessage ?? null,
+      });
+      return;
+    }
+
+    const errors: Record<string, string> = {};
+
+    const totals = await runQ(pool, errors, "totals",
       `SELECT
          COUNT(*) AS events,
          SUM(kind='pageview') AS pageviews,
@@ -149,8 +185,7 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
-    // Fixed Today / 7-day / 30-day session counts (always included regardless of `days`).
-    const [windows] = await pool.query(
+    const windows = await runQ(pool, errors, "windows",
       `SELECT
          COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 1 DAY THEN session_id END) AS sessions_24h,
          COUNT(DISTINCT CASE WHEN ts >= UTC_TIMESTAMP() - INTERVAL 7 DAY THEN session_id END) AS sessions_7d,
@@ -161,7 +196,7 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
        FROM devkit_events`,
     );
 
-    const [daily] = await pool.query(
+    const daily = await runQ(pool, errors, "daily",
       `SELECT DATE(ts) AS day,
               SUM(kind='pageview') AS pageviews,
               COUNT(DISTINCT visitor_id) AS visitors
@@ -170,36 +205,35 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
-    const [countries] = await pool.query(
+    const countries = await runQ(pool, errors, "countries",
       `SELECT COALESCE(country, 'Unknown') AS country, COUNT(DISTINCT visitor_id) AS visitors
        FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
        GROUP BY country ORDER BY visitors DESC LIMIT 15`,
       [days],
     );
 
-    const [devices] = await pool.query(
+    const devices = await runQ(pool, errors, "devices",
       `SELECT COALESCE(device, 'unknown') AS device, COUNT(DISTINCT visitor_id) AS visitors
        FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
        GROUP BY device ORDER BY visitors DESC`,
       [days],
     );
 
-    const [oses] = await pool.query(
+    const oses = await runQ(pool, errors, "oses",
       `SELECT COALESCE(os, 'unknown') AS os, COUNT(DISTINCT visitor_id) AS visitors
        FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
        GROUP BY os ORDER BY visitors DESC LIMIT 10`,
       [days],
     );
 
-    const [browsers] = await pool.query(
+    const browsers = await runQ(pool, errors, "browsers",
       `SELECT COALESCE(browser, 'unknown') AS browser, COUNT(DISTINCT visitor_id) AS visitors
        FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
        GROUP BY browser ORDER BY visitors DESC LIMIT 10`,
       [days],
     );
 
-    // Top events across ALL interaction kinds (clicks + theme + portal opens).
-    const [topEvents] = await pool.query(
+    const topEvents = await runQ(pool, errors, "topEvents",
       `SELECT kind, target, label, COUNT(*) AS hits
        FROM devkit_events
        WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
@@ -209,13 +243,14 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
-    const [sessionLen] = await pool.query(
+    const sessionLen = await runQ(pool, errors, "sessionLength",
       `SELECT AVG(duration_ms) AS avg_ms, MAX(duration_ms) AS max_ms
        FROM devkit_events WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY AND kind='session_end' AND duration_ms IS NOT NULL`,
       [days],
     );
 
-    const [flowTransitions] = await pool.query(
+    // Window function — requires MySQL 8+ / MariaDB 10.2+. Isolated try/catch.
+    const flowTransitions = await runQ(pool, errors, "flowTransitions",
       `SELECT from_section, to_section, COUNT(*) AS hits
        FROM (
          SELECT session_id, target AS to_section,
@@ -230,11 +265,12 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
-    const [flowPaths] = await pool.query(
+    // GROUP_CONCAT with ORDER BY — works on MySQL 5.7+/MariaDB 10.0+. Isolated.
+    const flowPaths = await runQ(pool, errors, "flowPaths",
       `SELECT path, COUNT(*) AS sessions, COUNT(DISTINCT visitor_id) AS visitors
        FROM (
-         SELECT session_id, ANY_VALUE(visitor_id) AS visitor_id,
-                GROUP_CONCAT(target ORDER BY ts, id SEPARATOR ' → ') AS path
+         SELECT session_id, MAX(visitor_id) AS visitor_id,
+                GROUP_CONCAT(target ORDER BY ts, id SEPARATOR ' \u2192 ') AS path
          FROM devkit_events
          WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY
            AND kind = 'portal_open' AND target IS NOT NULL
@@ -245,7 +281,7 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       [days],
     );
 
-    const [referrers] = await pool.query(
+    const referrers = await runQ(pool, errors, "referrers",
       `SELECT referrer, COUNT(*) AS hits FROM devkit_events
        WHERE ts >= UTC_TIMESTAMP() - INTERVAL ? DAY AND kind='pageview' AND referrer IS NOT NULL AND referrer <> ''
        GROUP BY referrer ORDER BY hits DESC LIMIT 10`,
@@ -266,6 +302,7 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       referrers,
       flowTransitions,
       flowPaths,
+      errors: Object.keys(errors).length > 0 ? errors : undefined,
     });
   } catch (err) {
     logger.error({ err }, "devkit stats failed");
@@ -278,6 +315,54 @@ router.get("/devkit/stats", requireDevkitAuth, async (req, res) => {
       sql: e?.sqlMessage ?? null,
     });
   }
+});
+
+// Diagnostic endpoint — reports config presence, connection, schema, and version.
+router.get("/devkit/health", requireDevkitAuth, async (_req, res) => {
+  const out: Record<string, unknown> = {
+    env: {
+      DEVKIT_PASSWORD: !!process.env.DEVKIT_PASSWORD,
+      HOSTINGER_DB_HOST: process.env.HOSTINGER_DB_HOST ?? null,
+      HOSTINGER_DB_PORT: process.env.HOSTINGER_DB_PORT ?? null,
+      HOSTINGER_DB_USER: process.env.HOSTINGER_DB_USER ?? null,
+      HOSTINGER_DB_PASSWORD: process.env.HOSTINGER_DB_PASSWORD ? "set" : null,
+      HOSTINGER_DB_NAME: process.env.HOSTINGER_DB_NAME ?? null,
+      ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS ?? null,
+      COOKIE_DOMAIN: process.env.COOKIE_DOMAIN ?? null,
+      COOKIE_CROSS_SITE: process.env.COOKIE_CROSS_SITE ?? null,
+    },
+    configured: isDevkitConfigured(),
+  };
+  try {
+    const pool = await getPool();
+    out.pool = "ok";
+    try {
+      const [v] = await pool.query("SELECT VERSION() AS v");
+      out.version = (v as Array<{ v: string }>)[0]?.v ?? null;
+    } catch (err) {
+      out.version_error = (err as Error).message;
+    }
+    try {
+      const [t] = await pool.query("SELECT COUNT(*) AS n FROM devkit_events");
+      out.events_count = (t as Array<{ n: number }>)[0]?.n ?? 0;
+    } catch (err) {
+      const e = err as { message?: string; code?: string; sqlMessage?: string };
+      out.table_error = `${e?.code ?? "ERR"}: ${e?.sqlMessage ?? e?.message}`;
+    }
+    try {
+      await pool.query(
+        "SELECT LAG(1) OVER (ORDER BY 1) AS x FROM (SELECT 1) t",
+      );
+      out.window_functions = "ok";
+    } catch (err) {
+      const e = err as { message?: string; code?: string; sqlMessage?: string };
+      out.window_functions = `ERR: ${e?.code ?? ""} ${e?.sqlMessage ?? e?.message}`;
+    }
+  } catch (err) {
+    const e = err as { message?: string; code?: string; sqlMessage?: string };
+    out.pool = `ERR: ${e?.code ?? ""} ${e?.sqlMessage ?? e?.message}`;
+  }
+  res.json(out);
 });
 
 const csvEscape = (v: unknown): string => {

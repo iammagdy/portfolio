@@ -29,6 +29,7 @@ interface Stats {
   referrers: Array<{ referrer: string; hits: number }>;
   flowTransitions: Array<{ from_section: string; to_section: string; hits: number }>;
   flowPaths: Array<{ path: string; sessions: number; visitors: number }>;
+  errors?: Record<string, string>;
 }
 
 const countryFlag = (cc: string): string => {
@@ -213,6 +214,20 @@ const DevkitPage = () => {
       {statsErr && (
         <div className="border border-red-700 bg-red-950 text-red-300 px-4 py-3 mb-4 font-vercetti text-xs">
           {statsErr}
+        </div>
+      )}
+
+      {stats?.errors && Object.keys(stats.errors).length > 0 && (
+        <div className="border border-yellow-700 bg-yellow-950 text-yellow-200 px-4 py-3 mb-4 font-vercetti text-xs">
+          <div className="font-bold mb-1 uppercase tracking-widest">Some queries failed:</div>
+          <ul className="space-y-1">
+            {Object.entries(stats.errors).map(([k, v]) => (
+              <li key={k}><span className="text-yellow-400">{k}:</span> {v}</li>
+            ))}
+          </ul>
+          <div className="mt-2 text-yellow-400">
+            Visit <code className="bg-black px-1">/api/devkit/health</code> on your API for full diagnostics.
+          </div>
         </div>
       )}
 
