@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "eLO1VuvKzerobDYkms5f0"
@@ -18,3 +17,15 @@ id = "wYuD5gDoVnpna6H4A2VlJ"
 uri = "file://artifacts/portfolio-promo-video/public/images/cloud-tech.png"
 type = "image"
 title = "AI Cloud Tech Abstract"
+
+[[outputs]]
+id = "1E5LfSdDo8ZNtzxab1oDz"
+uri = "file://.local/hostinger-deploy/HOSTINGER_GUIDE.md"
+type = "text"
+title = "Hostinger Deploy Guide (read this first)"
+
+[[outputs]]
+id = "kzDjVv1HBJij56tKpIOy0"
+uri = "file://.local/hostinger-deploy/magdysaber-api-deploy.tar.gz"
+type = "unspecified"
+title = "magdysaber-api-deploy.tar.gz (the brain to upload)"

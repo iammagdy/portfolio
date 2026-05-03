@@ -9,6 +9,9 @@ import {
   CartesianGrid,
 } from "recharts";
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const apiUrl = (path: string) => `${API_BASE}${path}`;
+
 interface Stats {
   days: number;
   totals: { events?: number; pageviews?: number; clicks?: number; visitors?: number; sessions?: number };
@@ -72,7 +75,7 @@ const DevkitPage = () => {
   useEffect(() => {
     document.title = "Devkit — Magdy Saber";
     document.body.style.background = "#f3f4f6";
-    fetch("/api/devkit/session", { credentials: "same-origin" })
+    fetch(apiUrl("/api/devkit/session"), { credentials: "include" })
       .then((r) => r.json())
       .then((d: { authed: boolean }) => setAuthed(!!d.authed))
       .catch(() => setAuthed(false));
@@ -85,7 +88,7 @@ const DevkitPage = () => {
     setLoading(true);
     setStatsErr(null);
     try {
-      const r = await fetch(`/api/devkit/stats?days=${d}`, { credentials: "same-origin" });
+      const r = await fetch(apiUrl(`/api/devkit/stats?days=${d}`), { credentials: "include" });
       if (r.status === 401) { setAuthed(false); return; }
       if (!r.ok) {
         const j = (await r.json().catch(() => ({}))) as { error?: string };
@@ -109,10 +112,10 @@ const DevkitPage = () => {
     setLoggingIn(true);
     setLoginErr(null);
     try {
-      const r = await fetch("/api/devkit/login", {
+      const r = await fetch(apiUrl("/api/devkit/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
+        credentials: "include",
         body: JSON.stringify({ password }),
       });
       if (r.ok) { setAuthed(true); setPassword(""); }
@@ -125,7 +128,7 @@ const DevkitPage = () => {
   };
 
   const onLogout = async () => {
-    await fetch("/api/devkit/logout", { method: "POST", credentials: "same-origin" });
+    await fetch(apiUrl("/api/devkit/logout"), { method: "POST", credentials: "include" });
     setAuthed(false);
     setStats(null);
   };
@@ -165,7 +168,7 @@ const DevkitPage = () => {
   const w = stats?.windows ?? {};
 
   const downloadCsv = () => {
-    window.location.href = `/api/devkit/export.csv?days=${days}`;
+    window.location.href = apiUrl(`/api/devkit/export.csv?days=${days}`);
   };
 
   return (

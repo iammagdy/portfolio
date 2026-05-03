@@ -36,20 +36,33 @@ const verify = (token: string): boolean => {
   return true;
 };
 
+// When the API runs on a different origin than the website (e.g. api.example.com
+// vs example.com), the cookie must be SameSite=None + Secure to be sent on
+// cross-site requests. Set COOKIE_CROSS_SITE=1 in production for that case.
+const isProd = process.env.NODE_ENV === "production";
+const crossSite = process.env.COOKIE_CROSS_SITE === "1";
+const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+
 export const issueDevkitCookie = (res: Response) => {
   const exp = Date.now() + MAX_AGE_MS;
   const token = sign(`devkit:${exp}`);
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd || crossSite,
+    sameSite: crossSite ? "none" : "lax",
     maxAge: MAX_AGE_MS,
     path: "/",
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 };
 
 export const clearDevkitCookie = (res: Response) => {
-  res.clearCookie(COOKIE_NAME, { path: "/" });
+  res.clearCookie(COOKIE_NAME, {
+    path: "/",
+    sameSite: crossSite ? "none" : "lax",
+    secure: isProd || crossSite,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
+  });
 };
 
 export const isDevkitAuthed = (req: Request): boolean => {

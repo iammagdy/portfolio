@@ -5,6 +5,9 @@ const SESSION_IDLE_MS = 30 * 60 * 1000;
 
 const isBrowser = typeof window !== "undefined";
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const apiUrl = (path: string) => `${API_BASE}${path}`;
+
 const safeUUID = (): string => {
   if (isBrowser && "crypto" in window && typeof window.crypto.randomUUID === "function") {
     return window.crypto.randomUUID();
@@ -61,7 +64,7 @@ interface EventInput {
 
 const send = (payload: Record<string, unknown>, useBeacon = false) => {
   if (!isBrowser) return;
-  const url = "/api/devkit/events";
+  const url = apiUrl("/api/devkit/events");
   const body = JSON.stringify(payload);
   try {
     if (useBeacon && "sendBeacon" in navigator) {
@@ -74,7 +77,7 @@ const send = (payload: Record<string, unknown>, useBeacon = false) => {
       headers: { "Content-Type": "application/json" },
       body,
       keepalive: true,
-      credentials: "same-origin",
+      credentials: "include",
     }).catch(() => undefined);
   } catch {
     // ignore
