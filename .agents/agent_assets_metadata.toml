@@ -65,3 +65,9 @@ id = "7kFZy8CuZGWaXV-VIYkC6"
 uri = "file://.local/hostinger-deploy/magdysaber-api-deploy-v5.tar.gz"
 type = "unspecified"
 title = "magdysaber-api-deploy-v5.tar.gz — bot filter + real client IPs"
+
+[[outputs]]
+id = "GfdFIzW8ZU_ITJ-Ja5-SS"
+uri = "file://api-server.zip"
+type = "unspecified"
+title = "api-server.zip"

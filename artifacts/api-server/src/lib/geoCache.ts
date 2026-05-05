@@ -29,18 +29,32 @@ export const getCountry = async (ip: string | null): Promise<string | null> => {
     cache.set(ip, entry);
   };
 
-  try {
+  const tryFetch = async (url: string, timeoutMs: number): Promise<string | null> => {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 200);
-    const resp = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/country/`, { signal: ctrl.signal });
-    clearTimeout(timer);
-    if (!resp.ok) {
-      setLru({ country: null, expires: Date.now() + 60_000 });
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const resp = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!resp.ok) return null;
+      const text = (await resp.text()).trim().toUpperCase();
+      return /^[A-Z]{2}$/.test(text) ? text : null;
+    } catch {
+      clearTimeout(timer);
       return null;
     }
-    const text = (await resp.text()).trim().toUpperCase();
-    const country = /^[A-Z]{2}$/.test(text) ? text : null;
-    setLru({ country, expires: Date.now() + CACHE_TTL_MS });
+  };
+
+  try {
+    // Primary: ipapi.co — 3 s timeout (was 200 ms, too short for production)
+    let country = await tryFetch(`https://ipapi.co/${encodeURIComponent(ip)}/country/`, 3_000);
+
+    // Fallback: ip-api.com (free, no key required)
+    if (country === null) {
+      const raw = await tryFetch(`http://ip-api.com/line/${encodeURIComponent(ip)}?fields=countryCode`, 3_000);
+      if (raw && /^[A-Z]{2}$/.test(raw)) country = raw;
+    }
+
+    setLru({ country, expires: Date.now() + (country ? CACHE_TTL_MS : 60_000) });
     return country;
   } catch {
     setLru({ country: null, expires: Date.now() + 60_000 });

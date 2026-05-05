@@ -8,6 +8,9 @@ const isBrowser = typeof window !== "undefined";
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 const apiUrl = (path: string) => `${API_BASE}${path}`;
 
+// ── Returning visitor: snapshot BEFORE we might create the key ────────────────
+const _isReturning: boolean = isBrowser ? !!localStorage.getItem(STORAGE_KEY_VISITOR) : false;
+
 const safeUUID = (): string => {
   if (isBrowser && "crypto" in window && typeof window.crypto.randomUUID === "function") {
     return window.crypto.randomUUID();
@@ -55,12 +58,45 @@ const sessionStart = (): number => {
   return s ? Number(s) : Date.now();
 };
 
+// ── UTM helpers ───────────────────────────────────────────────────────────────
+const _utmCache: { source?: string; medium?: string; campaign?: string } = {};
+const readUTM = () => {
+  if (!isBrowser) return _utmCache;
+  const sp = new URLSearchParams(window.location.search);
+  const source = sp.get("utm_source") ?? undefined;
+  const medium = sp.get("utm_medium") ?? undefined;
+  const campaign = sp.get("utm_campaign") ?? undefined;
+  if (source) _utmCache.source = source;
+  if (medium) _utmCache.medium = medium;
+  if (campaign) _utmCache.campaign = campaign;
+  return _utmCache;
+};
+
+// ── Core event types ──────────────────────────────────────────────────────────
 interface EventInput {
-  kind: "pageview" | "click" | "session_end" | "theme_change" | "portal_open" | "portal_close";
+  kind: "pageview" | "click" | "session_end" | "theme_change" | "portal_open" | "portal_close" | "perf";
   target?: string;
   label?: string;
   durationMs?: number;
 }
+
+const buildPayload = (e: EventInput): Record<string, unknown> => {
+  const utm = _utmCache;
+  return {
+    kind: e.kind,
+    target: e.target,
+    label: e.label,
+    durationMs: e.durationMs,
+    path: window.location.pathname,
+    referrer: document.referrer || undefined,
+    sessionId: getSessionId(),
+    visitorId: getVisitorId(),
+    isReturning: _isReturning,
+    utmSource: utm.source,
+    utmMedium: utm.medium,
+    utmCampaign: utm.campaign,
+  };
+};
 
 const send = (payload: Record<string, unknown>, useBeacon = false) => {
   if (!isBrowser) return;
@@ -86,17 +122,67 @@ const send = (payload: Record<string, unknown>, useBeacon = false) => {
 
 export const track = (e: EventInput) => {
   if (!isBrowser || isDoNotTrack() || isDevkitPath()) return;
-  const payload = {
-    kind: e.kind,
-    target: e.target,
-    label: e.label,
-    durationMs: e.durationMs,
-    path: window.location.pathname,
-    referrer: document.referrer || undefined,
-    sessionId: getSessionId(),
-    visitorId: getVisitorId(),
+  send(buildPayload(e), e.kind === "session_end");
+};
+
+// ── Performance tracking — single perf event with JSON label ─────────────────
+// Spec: one 'perf' event per pageview with label = JSON.stringify({load_ms, fcp_ms})
+const trackPerf = () => {
+  if (!isBrowser || isDoNotTrack() || isDevkitPath()) return;
+
+  let loadMs: number | null = null;
+  let fcpMs: number | null = null;
+  let sent = false;
+
+  const trySend = () => {
+    if (sent || (loadMs === null && fcpMs === null)) return;
+    sent = true;
+    const label = JSON.stringify({
+      ...(loadMs != null ? { load_ms: Math.round(loadMs) } : {}),
+      ...(fcpMs != null ? { fcp_ms: Math.round(fcpMs) } : {}),
+    });
+    send(buildPayload({ kind: "perf", label }));
   };
-  send(payload, e.kind === "session_end");
+
+  // FCP via PerformanceObserver (usually fires before load event)
+  try {
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.name === "first-contentful-paint") {
+          fcpMs = entry.startTime;
+          observer.disconnect();
+          break;
+        }
+      }
+    });
+    observer.observe({ type: "paint", buffered: true });
+  } catch { /* unsupported browser */ }
+
+  // Navigation timing for total load time
+  const readNav = () => {
+    try {
+      const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+      const nav = entries[0];
+      if (nav && nav.loadEventEnd > 0) {
+        loadMs = nav.loadEventEnd;
+      }
+    } catch { /* unsupported */ }
+  };
+
+  // After page load: read nav timing, then send combined event
+  const onLoaded = () => {
+    readNav();
+    // Small delay so FCP observer has time to fire
+    setTimeout(trySend, 200);
+  };
+
+  if (document.readyState === "complete") {
+    onLoaded();
+  } else {
+    window.addEventListener("load", onLoaded, { once: true });
+    // Safety net: send whatever we have after 15s
+    setTimeout(trySend, 15_000);
+  }
 };
 
 let installed = false;
@@ -105,10 +191,16 @@ export const installTracker = () => {
   if (isDoNotTrack() || isDevkitPath()) return;
   installed = true;
 
-  // initial pageview
+  // UTM: read on first load so they're cached before first track() call
+  readUTM();
+
+  // Initial pageview
   track({ kind: "pageview" });
 
-  // session_end on hide/unload (single-flight per page lifecycle).
+  // Single combined performance event after page fully loads
+  trackPerf();
+
+  // session_end on hide/unload (single-flight per page lifecycle)
   let endFlushed = false;
   const flushEnd = () => {
     if (endFlushed) return;
